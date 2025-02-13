@@ -21,7 +21,13 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Header from "../../components/Header";
 
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+
+
+
+
 const Agents = () => {
+  const navigate = useNavigate();
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const [open, setOpen] = useState(false);
@@ -42,6 +48,7 @@ const Agents = () => {
     adminID: admin._id
   });
 
+
   const columns = [
     { field: "createdAt", headerName: "Created At", flex: 1, renderCell: (params) => (
         <Typography color={colors.grey[100]} sx={{ ml: "5px" }}>
@@ -59,6 +66,7 @@ const Agents = () => {
     {
       field: "actions",
       headerName: "Actions",
+      flex: 1,
       renderCell: (params) => (
         <>
           <IconButton color="primary" onClick={() => handleEdit(params.row)}>
@@ -67,10 +75,18 @@ const Agents = () => {
           <IconButton color="secondary" onClick={() => handleDelete(params.row._id)}>
             <DeleteIcon />
           </IconButton>
+          <Button
+            variant="contained"
+            color="info"
+            size="small"
+            onClick={() => navigate(`/agentDetails/${params.row._id}`, { state: params.row })}
+          >
+            View 
+          </Button>
         </>
       ),
       sortable: false,
-      flex: 0.5
+      flex: 1
     }
   ];
 

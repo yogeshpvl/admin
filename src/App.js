@@ -15,6 +15,7 @@ import FTags from "./scenes/fastTags/FTags";
 import Agents from "./scenes/agents/Agents";
 import Login from "./scenes/auth/Login";
 import Banner from "./scenes/banner/Banner";
+import Details from "./scenes/agents/Details";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -43,6 +44,8 @@ function App() {
               <Route path="/form" element={<Form />} />
               <Route path="/fasttags" element={<FTags />} />
               <Route path="/banner" element={<Banner />} />
+              <Route path="/agentDetails/:id" element={<Details />} />
+
 
             </Routes>
           </main>

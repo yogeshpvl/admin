@@ -21,6 +21,9 @@ const FTags = () => {
   const [selectedTags, setSelectedTags] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState("");
   const [addOpen, setAddOpen] = useState(false);
+  const admin = JSON.parse(localStorage.getItem("FTadmin")); // Parse JSON string
+console.log("Admin Name: " + admin?.name); // Use optional chaining to prevent errors
+
 
 
   useEffect(() => {
@@ -104,7 +107,7 @@ const FTags = () => {
 
   const handleSave = async () => {
     try {
-    const response=  await axios.post("http://localhost:8500/api/tags", { tags: newFastTags });
+    const response=  await axios.post("http://localhost:8500/api/tags", { tags: newFastTags,createdBy:admin.name,createdId:admin._id });
       fetchFastTags([...fastTags, ...response.data]);
       handleAddClose();
     } catch (error) {
