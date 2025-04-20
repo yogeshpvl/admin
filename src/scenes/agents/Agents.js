@@ -21,7 +21,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Header from "../../components/Header";
 
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 
 
 
@@ -36,7 +36,7 @@ const Agents = () => {
 
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState(null); // Track selected agent for editing
+  const [selectedAgentId, setSelectedAgentId] = useState(null); 
   const [newAgent, setNewAgent] = useState({
     name: "",
     state: "",

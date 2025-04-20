@@ -5,7 +5,7 @@ import moment from "moment";
 const Details = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const agent = location.state; // Get agent details
+  const agent = location.state; 
 
   if (!agent) {
     return <Typography variant="h6">No agent data found!</Typography>;

@@ -1,31 +1,56 @@
 import { useState, useEffect } from "react";
 import { 
-  Box, Button,  useTheme, Dialog, DialogTitle, DialogContent, 
-  TextField, DialogActions, IconButton, MenuItem, Select
+  Box, Button, Dialog, DialogTitle, DialogContent, 
+  TextField, DialogActions, IconButton, MenuItem, Select, InputLabel, FormControl 
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
-import { tokens } from "../../theme";
-import Header from "../../components/Header";
 import axios from "axios";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
-import moment from "moment/moment";
+import UploadIcon from "@mui/icons-material/UploadFile";
+
+
+
+
+const tagOptions = [
+  { tagClass: "VC4", color: "#800080" }, 
+  { tagClass: "VC5", color: "#FF4500" },
+  { tagClass: "VC6", color: "#ffff00" },
+  { tagClass: "VC7", color: "#008000" },
+  { tagClass: "VC12", color: "#800000" },
+  { tagClass: "VC15", color: "#BDB76B" },
+  { tagClass: "VC16", color: "#708090" },
+];
+
+const mapperOptions = [
+  { tagClass: "VC4", mapperClass: "MC4" }, 
+  { tagClass: "VC4", mapperClass: "MC20" },
+  { tagClass: "VC5", mapperClass: "MC5" },
+  { tagClass: "VC5", mapperClass: "MC9" },
+  { tagClass: "VC6", mapperClass: "MC8" },
+  { tagClass: "VC6", mapperClass: "MC11" },
+  { tagClass: "VC7", mapperClass: "MC7" },
+  { tagClass: "VC7", mapperClass: "MC10" },
+  { tagClass: "VC12", mapperClass: "MC12" },
+  { tagClass: "VC12", mapperClass: "MC13" },
+  { tagClass: "VC15", mapperClass: "MC14" },
+  { tagClass: "VC15", mapperClass: "MC15" },
+  { tagClass: "VC16", mapperClass: "MC16" },
+  { tagClass: "VC16", mapperClass: "MC17" },
+];
 
 const FTags = () => {
-  const theme = useTheme();
-  const colors = tokens(theme.palette.mode);
-  const [open, setOpen] = useState(false);
-  const [fastTags, setFastTags] = useState([]);
-  const [newFastTags, setNewFastTags] = useState([{ kitNo: "", status: "" }]);
-  const [agents, setAgents] = useState([]);
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [selectedAgent, setSelectedAgent] = useState("");
+ 
   const [addOpen, setAddOpen] = useState(false);
-  const admin = JSON.parse(localStorage.getItem("FTadmin")); // Parse JSON string
-console.log("Admin Name: " + admin?.name); // Use optional chaining to prevent errors
-
-
-
+  const [fastTags, setFastTags] = useState([]);
+  const [newFastTags, setNewFastTags] = useState([{ kitNo: "", tagClass: "", mapperClass: "", color: "", assignedTo: "" }]);
+  const [agents, setAgents] = useState([]);
+  const [selectedAgent, setSelectedAgent] = useState("");
+  const [selectedTags, setSelectedTags] = useState([]);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const admin = JSON.parse(localStorage.getItem("FTadmin"));
+  console.log("newFastTags",newFastTags)
+  
   useEffect(() => {
     fetchFastTags();
     fetchAgents();
@@ -34,6 +59,7 @@ console.log("Admin Name: " + admin?.name); // Use optional chaining to prevent e
   const fetchFastTags = async () => {
     try {
       const response = await axios.get("http://localhost:8500/api/tags");
+     
       setFastTags(response.data);
     } catch (error) {
       console.error("Error fetching FastTags:", error);
@@ -43,195 +69,189 @@ console.log("Admin Name: " + admin?.name); // Use optional chaining to prevent e
   const fetchAgents = async () => {
     try {
       const response = await axios.get("http://localhost:8500/api/agent/getAllAgents");
-      console.log(response.data.data,"Agent")
       setAgents(response.data.data);
     } catch (error) {
       console.error("Error fetching agents:", error);
     }
   };
 
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const handleAddOpen = () => setAddOpen(true);
-  const handleAddClose = () => setAddOpen(false);
-  console.log("selectedTags",selectedTags)
-
-  const handleAssign = async () => {
-    const selectedObjects = fastTags.filter(tag => selectedTags.includes(tag._id));
-    const selectedAgentObj = agents.find(agent => agent._id === selectedAgent); // Find the selected agent
-    const agentName = selectedAgentObj ? selectedAgentObj.name : ""; // Get agent's name
-    
-    try {
-      await axios.put("http://localhost:8500/api/tags/assign", {
-        tags: selectedObjects,
-        agentId: selectedAgent,
-        agentName: agentName, // Pass agent name
-      });
-      fetchFastTags();
-      setSelectedTags([]);
-      setSelectedAgent("");
-    } catch (error) {
-      console.error("Error assigning FastTags:", error);
-    }
-  };
-  
-  
-
-  const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:8500/api/tags/${id}`);
-      fetchFastTags();
-    } catch (error) {
-      console.error("Error deleting FastTag:", error);
-    }
-  };
-
   const handleInputChange = (index, event) => {
     const { name, value } = event.target;
-    setNewFastTags((prevTags) => {
-      const updatedTags = [...prevTags];
-      updatedTags[index][name] = value;
-      return updatedTags;
-    });
+    const updatedTags = [...newFastTags];
+    updatedTags[index][name] = value;
+
+    if (name === "tagClass") {
+      const selectedTag = tagOptions.find(tag => tag.tagClass === value);
+      updatedTags[index].color = selectedTag?.color || "";
+      updatedTags[index].mapperClass = ""; 
+    }
+
+    setNewFastTags(updatedTags);
   };
 
-      // Add another input field for multiple tag entry
-      const addNewTagField = () => {
-        setNewFastTags([...newFastTags, { kitNo: "", assignedName: "", status: "" }]);
-      };
-    
-      // Remove a tag input field
-      const removeTagField = (index) => {
-        setNewFastTags((prevTags) => prevTags.filter((_, i) => i !== index));
-      };
+  const addNewTagField = () => {
+    setNewFastTags([...newFastTags, { kitNo: "", tagClass: "", mapperClass: "", color: "", assignedTo: "" }]);
+  };
+
+  const removeTagField = (index) => {
+    setNewFastTags(prevTags => prevTags.filter((_, i) => i !== index));
+  };
 
   const handleSave = async () => {
     try {
-    const response=  await axios.post("http://localhost:8500/api/tags", { tags: newFastTags,createdBy:admin.name,createdId:admin._id });
-      fetchFastTags([...fastTags, ...response.data]);
-      handleAddClose();
+      await axios.post("http://localhost:8500/api/tags", { tags: newFastTags,createdBy:admin.name,createdId:admin._id  });
+      fetchFastTags();
+      setAddOpen(false);
+    setNewFastTags([ { kitNo: "", tagClass: "", mapperClass: "", color: "", assignedTo: "" }]);
+
     } catch (error) {
       console.error("Error saving FastTags:", error);
     }
   };
 
+  console.log("selectedTags",selectedTags)
+  const handleBulkAssign = async () => {
+    if (selectedTags.length === 0) {
+      alert("Please select at least one FastTag to assign.");
+      return;
+    }
+  
+    setAssignOpen(true); // Open the modal for agent selection
+  };
+  
+  const handleAssignSubmit = async () => {
+    if (!selectedAgent) {
+      alert("Please select an agent before assigning tags.");
+      return;
+    }
+  
+    try {
+      await axios.put("http://localhost:8500/api/tags/assign", {
+        tags: selectedTags,
+        agentId: selectedAgent
+      });
+      fetchFastTags();
+      setSelectedTags([]);
+      setSelectedAgent(""); // Reset agent selection
+      setAssignOpen(false); // Close the modal after assignment
+    } catch (error) {
+      console.error("Error assigning FastTags:", error);
+    }
+  };
+
+  const handleRowSelection = (selectionModel) => {
+    setSelectedTags(selectionModel); // Update selected tags state
+    console.log("Selected Tags:", selectionModel); // Debugging to check if IDs are logged
+  };
+  
+
   const columns = [
-    { 
-      field: "slNo", 
-      headerName: "Sl No", 
-      flex: 1,
-      valueGetter: (params) => params.api.getRowIndex(params.id) + 1 
-    },    
-    { 
-      field: "createdAt", 
-      headerName: "Cr Date", 
-      flex: 1,
-      valueGetter: (params) => moment(params.row.createdAt).format("DD-MM-YYYY")
-    },    
-    { field: "kitNo", headerName: "Tag ID", flex: 1 },
-    { field: "agentName", headerName: "Assigned To", flex: 1 },
-    { field: "status", headerName: "Status", flex: 1 },
+    { field: "kitNo", headerName: "Kit No", flex: 1 },
+    { field: "tagClass", headerName: "Tag Class", flex: 1 },
+    { field: "mapperClass", headerName: "Mapper Class", flex: 1 },
+
+    { field: "assignedTo", headerName: "Assigned To", flex: 1 },
+    { field: "createdBy", headerName: "Created By", flex: 1 },
     {
-      field: "delete",
-      headerName: "Delete",
+      field: "createdAt",
+      headerName: "Created At",
       flex: 1,
-      renderCell: (params) => (
-        <IconButton onClick={() => handleDelete(params.row._id)}>
-          <DeleteIcon color="error" />
-        </IconButton>
-      ),
+      valueGetter: (params) => new Date(params.row?.createdAt).toLocaleString(),
     },
   ];
-
   useEffect(() => {
-    console.log("Selected Tags Updated:", selectedTags);
+    console.log("Updated Selected Tags:", selectedTags);
   }, [selectedTags]);
   
+
   return (
     <Box m="20px">
-      <Header title="Fast Tags" subtitle="Manage Fast Tags" />
-
-      <Button variant="contained" color="primary" onClick={handleAddOpen}>
-        Add Fast Tags
-      </Button>
-      <Button variant="contained" color="secondary" onClick={handleOpen} sx={{ ml: 2 }}>
-        Assign Fast Tags
-      </Button>
-
-      <Dialog open={addOpen} onClose={handleAddClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Fast Tags</DialogTitle>
-        <DialogContent>
-          {newFastTags.map((tag, index) => (
-            <Box key={index} display="flex" alignItems="center" gap="10px">
-
-            
-            <TextField
-              key={index}
-              name="kitNo"
-              label="Tag ID"
-              fullWidth
-              value={tag.kitNo}
-              onChange={(e) => handleInputChange(index, e)}
-              sx={{ mt: 2 }}
-            />
-            {index > 0 && (
-              <IconButton onClick={() => removeTagField(index)}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            )}
-            </Box>
-          ))}
-           <Button startIcon={<AddIcon />} onClick={addNewTagField} sx={{ mt: 2 }}>
-            Add Another
-          </Button>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleAddClose} color="secondary">Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Assign Fast Tags</DialogTitle>
-        <DialogContent>
-          <Select
-            value={selectedAgent}
-            onChange={(e) => setSelectedAgent(e.target.value)}
-            fullWidth
-            displayEmpty
-          >
-            <MenuItem value="" disabled>Select an Agent</MenuItem>
-            {agents?.map((agent) => (
-              <MenuItem key={agent._id} value={agent._id}>{agent.name}</MenuItem>
-            ))}
-          </Select>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="secondary">Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleAssign}>Assign</Button>
-        </DialogActions>
-      </Dialog>
-
-      <Box mt="40px" height="75vh" sx={{ "& .MuiDataGrid-root": { border: "none" } }}>
-
-
-
-<DataGrid
+      <Button variant="contained" color="primary" onClick={() => setAddOpen(true)}>Add Fast Tags</Button>
+      <Button variant="contained" color="secondary" onClick={handleBulkAssign} sx={{ ml: 2 }}>Assign Fast Tags</Button>
+      <DataGrid
+  rows={fastTags}
+  columns={columns}
+  getRowId={(row) => row._id || row.kitNo || row.id}
   checkboxSelection
-  rows={fastTags} 
-  columns={columns} 
-  getRowId={(row) => row._id} 
-  selectionModel={selectedTags} // Set the selected IDs here
-  onSelectionModelChange={(newSelectionModel) => {
-    setSelectedTags(newSelectionModel);  // Only store the selected IDs
-    console.log("Selected Tags:", newSelectionModel);  // Debugging log
+  disableRowSelectionOnClick={false}
+  onRowSelectionModelChange={(selectionModel) => {
+    console.log("Selected Rows:", selectionModel);
+    setSelectedTags(selectionModel.selectionModel || selectionModel); 
   }}
+  autoHeight
+  pageSizeOptions={[5, 10, 20]}
 />
 
 
 
+      <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle>Add New Fast Tags</DialogTitle>
+        <DialogContent>
+          {newFastTags.map((tag, index) => (
+            <Box key={index} display="flex" alignItems="center" gap="10px">
+              <TextField name="kitNo" label="Tag ID" size="small" fullWidth value={tag.kitNo} onChange={(e) => handleInputChange(index, e)} sx={{ mt: 2 }} />
+              
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>Tag Class</InputLabel>
+                <Select label="Tag Class" size="small" name="tagClass" value={tag.tagClass} onChange={(e) => handleInputChange(index, e)}>
+                  {tagOptions.map((opt) => <MenuItem key={opt.tagClass} value={opt.tagClass}>{opt.tagClass}</MenuItem>)}
+                </Select>
+              </FormControl>
 
-      </Box>
+              <FormControl fullWidth sx={{ mt: 2 }}>
+                <InputLabel>Mapper Class</InputLabel>
+                <Select
+                  label="Mapper Class"
+                  size="small"
+                  name="mapperClass"
+                  value={tag.mapperClass}
+                  onChange={(e) => handleInputChange(index, e)}
+                  disabled={!tag.tagClass}
+                >
+                  {mapperOptions.filter(m => m.tagClass === tag.tagClass).map((opt) => (
+                    <MenuItem key={opt.mapperClass} value={opt.mapperClass}>{opt.mapperClass}</MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              {index > 0 && <IconButton onClick={() => removeTagField(index)}><DeleteIcon color="error" /></IconButton>}
+            </Box>
+          ))}
+          <Button startIcon={<AddIcon />} onClick={addNewTagField} sx={{ mt: 2 }}>Add Another</Button>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddOpen(false)} color="secondary">Cancel</Button>
+          <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={assignOpen} onClose={() => setAssignOpen(false)} maxWidth="sm" fullWidth>
+  <DialogTitle>Assign Fast Tags</DialogTitle>
+  <DialogContent>
+    <FormControl fullWidth sx={{ mt: 2 }}>
+      <InputLabel>Select Agent</InputLabel>
+      <Select
+        label="Select Agent"
+        size="small"
+        value={selectedAgent}
+        onChange={(e) => setSelectedAgent(e.target.value)}
+      >
+        {agents.map((agent) => (
+          <MenuItem key={agent._id} value={agent._id}>
+            {agent.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setAssignOpen(false)} color="secondary">
+      Cancel
+    </Button>
+    <Button variant="contained" color="primary" onClick={handleAssignSubmit}>
+      Submit
+    </Button>
+  </DialogActions>
+</Dialog>
     </Box>
   );
 };
