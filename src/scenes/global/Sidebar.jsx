@@ -10,7 +10,8 @@ import ContactsOutlinedIcon from "@mui/icons-material/ContactsOutlined";
 import ReceiptOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
-
+import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet'; // New icon for Wallet
+import CreditCardIcon from '@mui/icons-material/CreditCard'; // New icon for Transactions
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -72,12 +73,8 @@ const Sidebar = () => {
               <Box
                 display="flex"
                 justifyContent="flex-end"
-            
                 ml="15px"
               >
-                {/* <Typography variant="h3" color={colors.grey[100]}>
-                  Super Admin
-                </Typography> */}
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
                   <MenuOutlinedIcon />
                 </IconButton>
@@ -103,107 +100,100 @@ const Sidebar = () => {
                   fontWeight="bold"
                   sx={{ m: "10px 0 0 0" }}
                 >
-                   Super Admin
+                  Super Admin
                 </Typography>
                 <Typography variant="h5" color={colors.greenAccent[500]}>
-              Partner
+                  Partner
                 </Typography>
               </Box>
             </Box>
           )}
 
-{admin.role === 'admin' ?
-
-<Box paddingLeft={isCollapsed ? undefined : "10%"}>
-<Item
-  title="Dashboard"
-  to="/dashboard"
-  icon={<HomeOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-
-{/* <Typography
-  variant="h6"
-  color={colors.grey[300]}
-  sx={{ m: "15px 0 5px 20px" }}
->
-  Data
-</Typography> */}
-
-<Item
-  title="Banners"
-  to="/banner"
-  icon={<ManageAccountsIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-<Item
-  title="Subpartners"
-  to="/subpartners"
-  icon={<ManageAccountsIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
- <Item
-  title="Agents"
-  to="/agents"
-  icon={<PeopleOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-<Item
-  title="Approvals"
-  to="/Approvals"
-  icon={<ContactsOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-<Item
-  title="Fast Tags"
-  to="/FastTags"
-  icon={<ReceiptOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-
-
-
-</Box>
-:
-<Box paddingLeft={isCollapsed ? undefined : "10%"}>
-<Item
-  title="Dashboard"
-  to="/dashboard"
-  icon={<HomeOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-
-
-
- <Item
-  title="Agents"
-  to="/agents"
-  icon={<PeopleOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-
-<Item
-  title="Fast Tags"
-  to="/FastTags"
-  icon={<ReceiptOutlinedIcon />}
-  selected={selected}
-  setSelected={setSelected}
-/>
-
-
-
-</Box>
-
-}
-   
+          {/* Admin view */}
+          {admin.role === 'admin' ? (
+            <Box paddingLeft={isCollapsed ? undefined : "10%"}>
+              <Item
+                title="Dashboard"
+                to="/dashboard"
+                icon={<HomeOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Banners"
+                to="/banner"
+                icon={<ManageAccountsIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Subpartners"
+                to="/subpartners"
+                icon={<ManageAccountsIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Agents"
+                to="/agents"
+                icon={<PeopleOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Approvals"
+                to="/approvals"
+                icon={<ContactsOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Fast Tags"
+                to="/fasttags"
+                icon={<ReceiptOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Payment Reports"
+                to="/paymentreports"
+                icon={<CreditCardIcon />} // New icon for Payment Reports
+                selected={selected}
+                setSelected={setSelected}
+              />
+              {/* <Item
+                title="Wallet History"
+                to="/wallethistory"
+                icon={<AccountBalanceWalletIcon />} // New icon for Wallet History
+                selected={selected}
+                setSelected={setSelected}
+              /> */}
+            </Box>
+          ) : (
+            <Box paddingLeft={isCollapsed ? undefined : "10%"}>
+              <Item
+                title="Dashboard"
+                to="/dashboard"
+                icon={<HomeOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Agents"
+                to="/agents"
+                icon={<PeopleOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+              <Item
+                title="Fast Tags"
+                to="/fasttags"
+                icon={<ReceiptOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+            </Box>
+          )}
         </Menu>
       </ProSidebar>
     </Box>

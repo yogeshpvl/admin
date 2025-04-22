@@ -43,7 +43,8 @@ const Subpartners = () => {
     email: "",
     password: "",
     accessLevel: "",
-    role:""
+    role:"",
+    type:""
   };
   
   const [newSubpartner, setNewSubpartner] = useState(initialSubpartnerState);
@@ -64,6 +65,8 @@ const Subpartners = () => {
     { field: "email", headerName: "Email", flex: 1 },
     { field: "city", headerName: "City" },
     { field: "state", headerName: "State" },
+    { field: "type", headerName: "Type" },
+
     {
       field: "role",
       headerName: "Role",
@@ -155,6 +158,9 @@ const Subpartners = () => {
   };
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this subpartner?");
+    if (!confirmDelete) return;
+  
     try {
       await axios.delete(`${Production_URL}/subpartner/delete/${id}`);
       getSubpartners();
@@ -162,6 +168,7 @@ const Subpartners = () => {
       console.error("Failed to delete subpartner", error);
     }
   };
+  
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -296,6 +303,20 @@ const Subpartners = () => {
             >
               <MenuItem value="admin">Admin</MenuItem>
               <MenuItem value="subpartner">Subpartner</MenuItem>
+            </TextField>
+            <TextField
+              name="type"
+              label="Activation Type"
+              select
+              fullWidth
+              required
+              value={newSubpartner.type}
+              onChange={handleInputChange}
+              error={!!errors.type}
+              helperText={errors.type}
+            >
+              <MenuItem value="Prepaid">Prepaid</MenuItem>
+              <MenuItem value="Postpaid">Postpaid</MenuItem>
             </TextField>
           </Box>
         </DialogContent>

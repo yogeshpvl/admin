@@ -20,11 +20,8 @@ import moment from "moment";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import Header from "../../components/Header";
-
-import { useNavigate } from "react-router-dom"; 
-
-
-
+import { useNavigate } from "react-router-dom";
+import { RemoveRedEyeRounded } from "@mui/icons-material";
 
 const Agents = () => {
   const navigate = useNavigate();
@@ -36,7 +33,10 @@ const Agents = () => {
 
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedAgentId, setSelectedAgentId] = useState(null); 
+  const [selectedAgentId, setSelectedAgentId] = useState(null);
+  const [filterName, setFilterName] = useState("");
+  const [filterCreatedBy, setFilterCreatedBy] = useState("");
+
   const [newAgent, setNewAgent] = useState({
     name: "",
     state: "",
@@ -48,9 +48,9 @@ const Agents = () => {
     adminID: admin._id
   });
 
-
   const columns = [
-    { field: "createdAt", headerName: "Created At", flex: 1, renderCell: (params) => (
+    {
+      field: "createdAt", headerName: "Created At", flex: 1, renderCell: (params) => (
         <Typography color={colors.grey[100]} sx={{ ml: "5px" }}>
           {moment(params.value).format("DD-MM-YYYY")}
         </Typography>
@@ -61,7 +61,7 @@ const Agents = () => {
     { field: "email", headerName: "Email", flex: 1 },
     { field: "city", headerName: "City" },
     { field: "state", headerName: "State" },
-    { field: "createdBy", headerName: "Created By" },  
+    { field: "createdBy", headerName: "Created By" },
     { field: "status", headerName: "Status" },
     {
       field: "actions",
@@ -72,21 +72,15 @@ const Agents = () => {
           <IconButton color="primary" onClick={() => handleEdit(params.row)}>
             <EditIcon />
           </IconButton>
+          <IconButton color="secondary" onClick={() => navigate(`/agentDetails/${params.row._id}`, { state: params.row })}>
+            <RemoveRedEyeRounded />
+          </IconButton>
           <IconButton color="secondary" onClick={() => handleDelete(params.row._id)}>
             <DeleteIcon />
           </IconButton>
-          <Button
-            variant="contained"
-            color="info"
-            size="small"
-            onClick={() => navigate(`/agentDetails/${params.row._id}`, { state: params.row })}
-          >
-            View 
-          </Button>
         </>
       ),
       sortable: false,
-      flex: 1
     }
   ];
 
@@ -95,10 +89,11 @@ const Agents = () => {
   }, []);
 
   const getAgents = () => {
-    axios
-      .get(
-        Production_URL + (admin.role === "admin" ? "/agent/getAllAgents" : `/agent/particulrSubpartnerAgents/${admin._id}`)
-      )
+    axios.get(
+      Production_URL + (admin.role === "admin"
+        ? "/agent/getAllAgents"
+        : `/agent/particulrSubpartnerAgents/${admin._id}`)
+    )
       .then((response) => {
         setData(response.data.data);
       })
@@ -106,7 +101,6 @@ const Agents = () => {
         console.log(error);
       });
   };
-  
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -114,7 +108,7 @@ const Agents = () => {
     if (!newAgent.name) newErrors.name = "Name is required";
     if (!newAgent.number) newErrors.number = "Phone Number is required";
     if (!newAgent.email) newErrors.email = "Email is required";
-    if (!newAgent.password && !isEditing) newErrors.password = "Password is required"; // Only require password for new agents
+    if (!newAgent.password && !isEditing) newErrors.password = "Password is required";
     if (!newAgent.city) newErrors.city = "City is required";
     if (!newAgent.state) newErrors.state = "State is required";
 
@@ -134,7 +128,7 @@ const Agents = () => {
         setOpen(false);
         setIsEditing(false);
         setSelectedAgentId(null);
-        getAgents(); // Refresh data after updating/creating agent
+        getAgents();
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Failed. Please try again.";
@@ -149,7 +143,7 @@ const Agents = () => {
       city: agent.city,
       number: agent.number,
       email: agent.email,
-      password: "", // Keep empty or provide option to change password
+      password: "",
       createdBy: admin.name,
       adminID: admin._id
     });
@@ -159,6 +153,8 @@ const Agents = () => {
   };
 
   const handleDelete = async (id) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this agent?");
+    if (!confirmDelete) return;
     try {
       await axios.delete(`${Production_URL}/agent/deleteAgent/${id}`);
       getAgents();
@@ -198,6 +194,25 @@ const Agents = () => {
         {isEditing ? "Edit Agent" : "Create Agent"}
       </Button>
 
+      {/* Filter Inputs */}
+      <Box display="flex" gap="20px" my={2}>
+        <TextField
+          label="Filter by Name"
+          variant="outlined"
+          value={filterName}
+          onChange={(e) => setFilterName(e.target.value)}
+          size="small"
+        />
+        <TextField
+          label="Filter by Created By"
+          variant="outlined"
+          value={filterCreatedBy}
+          onChange={(e) => setFilterCreatedBy(e.target.value)}
+          size="small"
+        />
+      </Box>
+
+      {/* Dialog */}
       <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
         <DialogTitle>{isEditing ? "Edit Agent" : "Create New Agent"}</DialogTitle>
         <DialogContent>
@@ -280,41 +295,37 @@ const Agents = () => {
         </DialogActions>
       </Dialog>
 
+      {/* DataGrid */}
       <Box m="40px 0 0 0" height="75vh"
-      
-      sx={{
-        "& .MuiDataGrid-root": {
-          border: "none",
-        },
-        "& .MuiDataGrid-cell": {
-          borderBottom: "none",
-        },
-        "& .name-column--cell": {
-          color: colors.greenAccent[300],
-        },
-        "& .MuiDataGrid-columnHeaders": {
-          backgroundColor: colors.blueAccent[700],
-          borderBottom: "none",
-        },
-        "& .MuiDataGrid-virtualScroller": {
-          backgroundColor: colors.primary[400],
-        },
-        "& .MuiDataGrid-footerContainer": {
-          borderTop: "none",
-          backgroundColor: colors.blueAccent[700],
-        },
-        "& .MuiCheckbox-root": {
-          color: `${colors.greenAccent[200]} !important`,
-        },
-        "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
-          color: `${colors.grey[100]} !important`,
-        },
-      }}
-      
+        sx={{
+          "& .MuiDataGrid-root": { border: "none" },
+          "& .MuiDataGrid-cell": { borderBottom: "none" },
+          "& .name-column--cell": { color: colors.greenAccent[300] },
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: colors.blueAccent[700],
+            borderBottom: "none",
+          },
+          "& .MuiDataGrid-virtualScroller": {
+            backgroundColor: colors.primary[400],
+          },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "none",
+            backgroundColor: colors.blueAccent[700],
+          },
+          "& .MuiCheckbox-root": {
+            color: `${colors.greenAccent[200]} !important`,
+          },
+          "& .MuiDataGrid-toolbarContainer .MuiButton-text": {
+            color: `${colors.grey[100]} !important`,
+          },
+        }}
       >
         <DataGrid
           checkboxSelection
-          rows={data}
+          rows={data.filter(agent =>
+            agent.name.toLowerCase().includes(filterName.toLowerCase()) &&
+            agent.createdBy.toLowerCase().includes(filterCreatedBy.toLowerCase())
+          )}
           columns={columns}
           getRowId={(row) => row._id}
         />
