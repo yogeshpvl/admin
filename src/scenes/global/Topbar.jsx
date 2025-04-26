@@ -31,6 +31,12 @@ const Topbar = () => {
     localStorage.removeItem("FTadmin");
     window.location.assign("/");
   };
+  const changePassword = () => {
+
+    handleMenuClose();
+   
+    window.location.assign("/change-password");
+  };
 
   return (
     <Box display="flex" justifyContent="space-between" p={2}>
@@ -69,6 +75,9 @@ const Topbar = () => {
         >
            <MenuItem >
             <Typography>{admin.name}</Typography>
+          </MenuItem>
+          <MenuItem onClick={changePassword}>
+            <Typography>Change Password</Typography>
           </MenuItem>
           <MenuItem onClick={handleLogout}>
             <Typography>Logout</Typography>

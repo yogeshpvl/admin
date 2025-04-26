@@ -17,6 +17,9 @@ import Login from "./scenes/auth/Login";
 import Banner from "./scenes/banner/Banner";
 import Details from "./scenes/agents/Details";
 import PaymentReports from "./scenes/PaymentReports";
+import Report from "./scenes/report/Repot";
+import ChangePassword from "./scenes/ChangePassword";
+import SubPartnerReport from "./scenes/SubPartnerReport";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -46,6 +49,11 @@ function App() {
               <Route path="/fasttags" element={<FTags />} />
               <Route path="/banner" element={<Banner />} />
               <Route path="/paymentreports" element={<PaymentReports />} />
+              <Route path="/reports" element={<Report />} />
+              <Route path="/subreports" element={<SubPartnerReport />} />
+
+              <Route path="/change-password" element={<ChangePassword />} />
+
 
               <Route path="/agentDetails/:id" element={<Details />} />
 

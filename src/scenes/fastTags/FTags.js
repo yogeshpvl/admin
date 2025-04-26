@@ -57,7 +57,7 @@ const FTags = () => {
 
   const fetchFastTags = async () => {
     try {
-      const response = await axios.get(`http://localhost:8500/api/tags/createdBy/${admin?._id}`);
+      const response = await axios.get(`https://api.aktollpark.com/api/tags/createdBy/${admin?._id}`);
       console.log("response.data",response.data)
       setFastTags(response.data);
     } catch (error) {
@@ -67,7 +67,7 @@ const FTags = () => {
 
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("http://localhost:8500/api/agent/getAllAgents");
+      const response = await axios.get("https://api.aktollpark.com/api/agent/getAllAgents");
       setAgents(response.data.data);
     } catch (error) {
       console.error("Error fetching agents:", error);
@@ -98,7 +98,7 @@ const FTags = () => {
 
   const handleSave = async () => {
     try {
-      await axios.post("http://localhost:8500/api/tags", {
+      await axios.post("https://api.aktollpark.com/api/tags", {
         tags: newFastTags,
         createdBy: admin.name,
         createdId: admin._id,
@@ -126,7 +126,7 @@ const FTags = () => {
     }
 
     try {
-      await axios.put("http://localhost:8500/api/tags/assign", {
+      await axios.put("https://api.aktollpark.com/api/tags/assign", {
         tags: selectedTags,
         agentId: selectedAgent
       });
@@ -158,7 +158,7 @@ const FTags = () => {
       }));
  
       try {
-        await axios.post("http://localhost:8500/api/tags", { tags: formatted });
+        await axios.post("https://api.aktollpark.com/api/tags", { tags: formatted });
         fetchFastTags();
         alert("Tags uploaded successfully");
       } catch (err) {
@@ -190,7 +190,7 @@ const FTags = () => {
       field: "assignedAgent",
       headerName: "Agent Name",
       flex: 1,
-      valueGetter: (params) => params.name , // Access agent name safely
+      valueGetter: (params) => params?.name , // Access agent name safely
     },
     { field: "createdBy", headerName: "Created By", flex: 1 },
     {

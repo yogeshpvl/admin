@@ -155,25 +155,25 @@ const Sidebar = () => {
                 setSelected={setSelected}
               />
               <Item
-                title="Payment Reports"
+                title="Payments"
                 to="/paymentreports"
                 icon={<CreditCardIcon />} // New icon for Payment Reports
                 selected={selected}
                 setSelected={setSelected}
               />
-              {/* <Item
-                title="Wallet History"
-                to="/wallethistory"
+              <Item
+                title="Reports"
+                to="/reports"
                 icon={<AccountBalanceWalletIcon />} // New icon for Wallet History
                 selected={selected}
                 setSelected={setSelected}
-              /> */}
+              />
             </Box>
           ) : (
             <Box paddingLeft={isCollapsed ? undefined : "10%"}>
               <Item
                 title="Dashboard"
-                to="/dashboard"
+                to="/dashboard1"
                 icon={<HomeOutlinedIcon />}
                 selected={selected}
                 setSelected={setSelected}
@@ -189,6 +189,13 @@ const Sidebar = () => {
                 title="Fast Tags"
                 to="/fasttags"
                 icon={<ReceiptOutlinedIcon />}
+                selected={selected}
+                setSelected={setSelected}
+              />
+               <Item
+                title="Reports"
+                to="/subreports"
+                icon={<AccountBalanceWalletIcon />} // New icon for Wallet History
                 selected={selected}
                 setSelected={setSelected}
               />

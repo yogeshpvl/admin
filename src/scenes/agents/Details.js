@@ -70,7 +70,7 @@ const [deductReason, setDeductReason] = useState("");
 
   const fetchWalletHistory = async () => {
     try {
-      const res = await axios.get(`http://localhost:8500/wallet-details/${agent._id}`);
+      const res = await axios.get(`https://api.aktollpark.com/wallet-details/${agent._id}`);
       setWalletHistory(res.data.transactions || []);
       setWallet(res.data.balance)
     } catch (err) {
@@ -124,6 +124,8 @@ const [deductReason, setDeductReason] = useState("");
                       <strong>Tag Class:</strong> {tag.tagClass } &nbsp; | &nbsp;
 
                       <strong>Date:</strong> {moment(tag.updatedAt).format("DD-MM-YYYY")} ({moment().diff(moment(tag.updatedAt), "days")} days)
+                      <strong>Status:</strong>  Pending
+                   
                     </Typography>
                   </ListItem>
                 ))

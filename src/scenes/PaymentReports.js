@@ -1,26 +1,60 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import {
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
+  TextField, Button, MenuItem, Pagination, Stack, Box
+} from '@mui/material';
 
 function PaymentReports() {
-  const [WalletHistory, setWalletHistory] = useState([]);
+  const [walletHistory, setWalletHistory] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [selectedAgent, setSelectedAgent] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage] = useState(5); // Change this number to increase/decrease rows per page
+  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch the wallet history when the component mounts
+  const rowsPerPage = 25;
+
+  useEffect(() => {
+    fetchAgents();
+  }, []);
+
   useEffect(() => {
     fetchWalletHistory();
-  }, []);
+  }, [currentPage]);
+
+  const fetchAgents = async () => {
+    try {
+      const res = await axios.get(`https://api.aktollpark.com/agents-list`);
+      setAgents(res.data.agents || []);
+    } catch (err) {
+      console.error("Error fetching agents:", err);
+    }
+  };
 
   const fetchWalletHistory = async () => {
     try {
-      const res = await axios.get(`http://localhost:8500/payments-details`);
+      let query = `?page=${currentPage}&limit=${rowsPerPage}`;
+      if (startDate && endDate) {
+        query += `&startDate=${new Date(startDate).toISOString()}&endDate=${new Date(endDate).toISOString()}`;
+      }
+      if (selectedAgent) {
+        query += `&agentId=${selectedAgent}`;
+      }
+      const res = await axios.get(`https://api.aktollpark.com/payments-details${query}`);
       setWalletHistory(res.data.transactions || []);
+      setTotalPages(res.data.totalPages || 1);
     } catch (err) {
       console.error("Error fetching wallet history:", err);
     }
   };
 
-  // Format the date in a human-readable format
+  const handleFilter = () => {
+    setCurrentPage(1);
+    fetchWalletHistory();
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("en-IN", {
@@ -34,61 +68,96 @@ function PaymentReports() {
     });
   };
 
-  // Pagination logic to slice the wallet history array
-  const indexOfLastRow = currentPage * rowsPerPage;
-  const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = WalletHistory.slice(indexOfFirstRow, indexOfLastRow);
-
-  // Handling page change
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
-
   return (
-    <div>
+    <div style={{ padding: 20 }}>
       <h1>Payment Reports</h1>
-      {/* Table to display wallet history */}
-      <table border="1" cellPadding="10" style={{ width: '100%', marginTop: '20px' }}>
-        <thead>
-          <tr>
-            <th>Order ID</th>
-            <th>Payment ID</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th>Payment Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentRows.map((entry) => (
-            <tr key={entry._id}>
-              <td>{entry.orderId}</td>
-              <td>{entry.paymentId}</td>
-              <td>{entry.amount}</td>
-              <td>{entry.status}</td>
-              <td>{formatDate(entry.createdAt)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
 
-      {/* Pagination Controls */}
-      <div style={{ marginTop: '20px', display: 'flex', justifyContent: 'center' }}>
-        <button 
-          onClick={() => handlePageChange(currentPage - 1)} 
-          disabled={currentPage === 1} 
-          style={{ marginRight: '10px' }}
+      {/* Filters */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' },
+          gap: 2,
+          marginBottom: 3,
+        }}
+      >
+        <TextField
+          label="From Date"
+          type="date"
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+        />
+        <TextField
+          label="To Date"
+          type="date"
+          value={endDate}
+          onChange={(e) => setEndDate(e.target.value)}
+          InputLabelProps={{ shrink: true }}
+          fullWidth
+        />
+        <TextField
+          select
+          label="Select Agent"
+          value={selectedAgent}
+          onChange={(e) => setSelectedAgent(e.target.value)}
+          fullWidth
         >
-          Previous
-        </button>
-        <span>Page {currentPage}</span>
-        <button 
-          onClick={() => handlePageChange(currentPage + 1)} 
-          disabled={currentPage * rowsPerPage >= WalletHistory.length} 
-          style={{ marginLeft: '10px' }}
+          <MenuItem value="">All Agents</MenuItem>
+          {agents.map((agent) => (
+            <MenuItem key={agent._id} value={agent._id}>
+              {agent.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <Button
+          variant="contained"
+          onClick={handleFilter}
+          fullWidth
+          sx={{ height: '56px' }}
         >
-          Next
-        </button>
-      </div>
+          Apply Filters
+        </Button>
+      </Box>
+
+      {/* Payment Table */}
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Order ID</TableCell>
+              <TableCell>Payment ID</TableCell>
+              <TableCell>Amount</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Agent Name</TableCell>
+              <TableCell>Payment Date</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {walletHistory.map((entry) => (
+              <TableRow key={entry._id}>
+                <TableCell>{entry.orderId}</TableCell>
+                <TableCell>{entry.paymentId}</TableCell>
+                <TableCell>₹{entry.amount}</TableCell>
+                <TableCell>{entry.status}</TableCell>
+                <TableCell>{entry.agentId?.name || "N/A"}</TableCell>
+                <TableCell>{formatDate(entry.createdAt)}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* Pagination */}
+      <Stack spacing={2} direction="row" justifyContent="center" marginTop={3}>
+        <Pagination
+          count={totalPages}
+          page={currentPage}
+          onChange={(e, value) => setCurrentPage(value)}
+          color="primary"
+        />
+      </Stack>
     </div>
   );
 }

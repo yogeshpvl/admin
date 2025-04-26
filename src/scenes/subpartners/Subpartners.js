@@ -35,6 +35,7 @@ const Subpartners = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubpartner, setSelectedSubpartner] = useState(null);
 
+  console.log("data---",data)
   const initialSubpartnerState = {
     name: "",
     state: "",
@@ -43,8 +44,15 @@ const Subpartners = () => {
     email: "",
     password: "",
     accessLevel: "",
-    role:"",
-    type:""
+    role: "",
+    type: "",
+    fastTagPrice: {
+      basePrice: 250,
+      activationFee: 0,
+      paymentGatewayFee: 0,
+      platformFee: 0,
+      gst: 0,
+    }
   };
   
   const [newSubpartner, setNewSubpartner] = useState(initialSubpartnerState);
@@ -318,6 +326,92 @@ const Subpartners = () => {
               <MenuItem value="Prepaid">Prepaid</MenuItem>
               <MenuItem value="Postpaid">Postpaid</MenuItem>
             </TextField>
+            {newSubpartner.role === "subpartner" && newSubpartner.type === "Postpaid" && (
+  <>
+    <Typography variant="h6" mt={2}>FastTag Pricing Details</Typography>
+    <TextField
+      name="basePrice"
+      label="Base Price"
+      type="number"
+      fullWidth
+      value={newSubpartner?.fastTagPrice?.basePrice}
+      onChange={(e) =>
+        setNewSubpartner((prev) => ({
+          ...prev,
+          fastTagPrice: {
+            ...prev.fastTagPrice,
+            basePrice: Number(e.target.value),
+          },
+        }))
+      }
+    />
+    <TextField
+      name="activationFee"
+      label="Activation Fee"
+      type="number"
+      fullWidth
+      value={newSubpartner?.fastTagPrice?.activationFee}
+      onChange={(e) =>
+        setNewSubpartner((prev) => ({
+          ...prev,
+          fastTagPrice: {
+            ...prev.fastTagPrice,
+            activationFee: Number(e.target.value),
+          },
+        }))
+      }
+    />
+    <TextField
+      name="paymentGatewayFee"
+      label="Payment Gateway Fee"
+      type="number"
+      fullWidth
+      value={newSubpartner?.fastTagPrice?.paymentGatewayFee}
+      onChange={(e) =>
+        setNewSubpartner((prev) => ({
+          ...prev,
+          fastTagPrice: {
+            ...prev.fastTagPrice,
+            paymentGatewayFee: Number(e.target.value),
+          },
+        }))
+      }
+    />
+    <TextField
+      name="platformFee"
+      label="Platform Fee"
+      type="number"
+      fullWidth
+      value={newSubpartner?.fastTagPrice?.platformFee}
+      onChange={(e) =>
+        setNewSubpartner((prev) => ({
+          ...prev,
+          fastTagPrice: {
+            ...prev.fastTagPrice,
+            platformFee: Number(e.target.value),
+          },
+        }))
+      }
+    />
+    <TextField
+      name="gst"
+      label="GST"
+      type="number"
+      fullWidth
+      value={newSubpartner?.fastTagPrice.gst}
+      onChange={(e) =>
+        setNewSubpartner((prev) => ({
+          ...prev,
+          fastTagPrice: {
+            ...prev.fastTagPrice,
+            gst: Number(e.target.value),
+          },
+        }))
+      }
+    />
+  </>
+)}
+
           </Box>
         </DialogContent>
         <DialogActions>
