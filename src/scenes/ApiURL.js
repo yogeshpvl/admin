@@ -1,4 +1,4 @@
-const Production_URL="http://localhost:8500/api"
-const Production_IMG_URL="http://localhost:8500"
+const Production_URL="https://api.aktollpark.com/api"
+const Production_IMG_URL="https://api.aktollpark.com"
 
 module.exports ={Production_IMG_URL, Production_URL}

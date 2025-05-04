@@ -70,7 +70,7 @@ const [deductReason, setDeductReason] = useState("");
 
   const fetchWalletHistory = async () => {
     try {
-      const res = await axios.get(`http://localhost:8500/wallet-details/${agent._id}`);
+      const res = await axios.get(`https://api.aktollpark.com/wallet-details/${agent._id}`);
       setWalletHistory(res.data.transactions || []);
       setWallet(res.data.balance)
     } catch (err) {

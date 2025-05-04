@@ -26,7 +26,7 @@ function PaymentReports() {
 
   const fetchAgents = async () => {
     try {
-      const res = await axios.get(`http://localhost:8500/agents-list`);
+      const res = await axios.get(`https://api.aktollpark.com/agents-list`);
       setAgents(res.data.agents || []);
     } catch (err) {
       console.error("Error fetching agents:", err);
@@ -42,7 +42,7 @@ function PaymentReports() {
       if (selectedAgent) {
         query += `&agentId=${selectedAgent}`;
       }
-      const res = await axios.get(`http://localhost:8500/payments-details${query}`);
+      const res = await axios.get(`https://api.aktollpark.com/payments-details${query}`);
       setWalletHistory(res.data.transactions || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {

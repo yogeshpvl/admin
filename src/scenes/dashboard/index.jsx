@@ -35,7 +35,7 @@ const Dashboard = () => {
 
     const fetchWalletHistory = async () => {
       try {
-        const res = await axios.get(`http://localhost:8500/payments-details`);
+        const res = await axios.get(`https://api.aktollpark.com/payments-details`);
         setWalletHistory(res.data.transactions || []);
        
       } catch (err) {
@@ -46,7 +46,7 @@ const Dashboard = () => {
 
     const fetchTotalAmount = async () => {
       try {
-        const res = await axios.get(`http://localhost:8500/total-amount-success`);
+        const res = await axios.get(`https://api.aktollpark.com/total-amount-success`);
 
         setTotalAmount(res.data.totalAmount || []);
        
@@ -58,7 +58,7 @@ const Dashboard = () => {
    
     const fetchTagsCounts = async () => {
       try {
-        const res = await axios.get(`http://localhost:8500/api/tags/counts`);
+        const res = await axios.get(`https://api.aktollpark.com/api/tags/counts`);
 
         console.log("res--",res.data)
         setTotalTags(res.data.totalTags || 0);
@@ -72,7 +72,7 @@ const Dashboard = () => {
 
     const fetchAgentCounts = async () => {
       try {
-        const res = await axios.get(`http://localhost:8500/api/agent/counts`);
+        const res = await axios.get(`https://api.aktollpark.com/api/agent/counts`);
 
         console.log("res--",res.data.count)
         setTotalAgents(res.data.count || 0);
@@ -86,7 +86,7 @@ const Dashboard = () => {
 
     const fetchSubpartnerCounts = async () => {
       try {
-        const res = await axios.get(`http://localhost:8500/api/subpartner/subpartnerCount`);
+        const res = await axios.get(`https://api.aktollpark.com/api/subpartner/subpartnerCount`);
 
         console.log("res--",res.data.count)
         setTotalSubpartner(res.data.count || 0);
