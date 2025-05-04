@@ -11,6 +11,9 @@ import {
   DialogActions,
   MenuItem,
   IconButton,
+  FormControl,
+  InputLabel,
+  Select
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
@@ -29,8 +32,10 @@ const Agents = () => {
   const colors = tokens(theme.palette.mode);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState([]);
+  const [admins, setAdmins] = useState([]); // State for admins list
   const admin = JSON.parse(localStorage.getItem('FTadmin'));
 
+  console.log("admins",admins)
   const [errors, setErrors] = useState({});
   const [isEditing, setIsEditing] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState(null);
@@ -61,7 +66,7 @@ const Agents = () => {
     { field: "email", headerName: "Email", flex: 1 },
     { field: "city", headerName: "City" },
     { field: "state", headerName: "State" },
-    { field: "createdBy", headerName: "Created By" },
+    { field: "createdBy", headerName: "TL name" },
     { field: "status", headerName: "Status" },
     {
       field: "actions",
@@ -86,6 +91,7 @@ const Agents = () => {
 
   useEffect(() => {
     getAgents();
+    getAdmins(); // Fetch admins on component mount
   }, []);
 
   const getAgents = () => {
@@ -102,6 +108,17 @@ const Agents = () => {
       });
   };
 
+  const getAdmins = () => {
+    // Replace with your actual API endpoint for fetching admins
+    axios.get(`${Production_URL}/subpartner/getSubpartners`)
+      .then((response) => {
+        setAdmins(response.data.data || []); // Assuming response.data.data contains admins
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     const newErrors = {};
@@ -111,6 +128,8 @@ const Agents = () => {
     if (!newAgent.password && !isEditing) newErrors.password = "Password is required";
     if (!newAgent.city) newErrors.city = "City is required";
     if (!newAgent.state) newErrors.state = "State is required";
+    if (!newAgent.createdBy) newErrors.createdBy = "TL name is required";
+    if (!newAgent.adminID) newErrors.adminID = "TL ID is required";
 
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -144,8 +163,8 @@ const Agents = () => {
       number: agent.number,
       email: agent.email,
       password: "",
-      createdBy: admin.name,
-      adminID: admin._id
+      createdBy: agent.createdBy,
+      adminID: agent.adminID
     });
     setSelectedAgentId(agent._id);
     setIsEditing(true);
@@ -183,7 +202,16 @@ const Agents = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewAgent((prev) => ({ ...prev, [name]: value }));
+    if (name === "adminID") {
+      const selectedAdmin = admins.find(admin => admin._id === value);
+      setNewAgent((prev) => ({
+        ...prev,
+        adminID: value,
+        createdBy: selectedAdmin ? selectedAdmin.name : prev.createdBy
+      }));
+    } else {
+      setNewAgent((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   return (
@@ -197,14 +225,14 @@ const Agents = () => {
       {/* Filter Inputs */}
       <Box display="flex" gap="20px" my={2}>
         <TextField
-          label="Filter by Name"
+          label="Filter by Agent Name"
           variant="outlined"
           value={filterName}
           onChange={(e) => setFilterName(e.target.value)}
           size="small"
         />
         <TextField
-          label="Filter by Created By"
+          label="Filter by TL Name"
           variant="outlined"
           value={filterCreatedBy}
           onChange={(e) => setFilterCreatedBy(e.target.value)}
@@ -285,6 +313,22 @@ const Agents = () => {
             >
               <MenuItem value="Karnataka">Karnataka</MenuItem>
             </TextField>
+            <FormControl fullWidth required error={!!errors.adminID}>
+              <InputLabel>TL Name</InputLabel>
+              <Select
+                name="adminID"
+                label="TL Name"
+                value={newAgent.adminID}
+                onChange={handleInputChange}
+              >
+                {admins.map((admin) => (
+                  <MenuItem key={admin._id} value={admin._id}>
+                    {admin.name}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.adminID && <Typography color="error" variant="caption">{errors.adminID}</Typography>}
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>

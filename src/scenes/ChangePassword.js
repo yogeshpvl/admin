@@ -14,7 +14,7 @@ function ChangePassword() {
     setMessage('');
 
     try {
-      const response = await axios.post('https://api.aktollpark.com/api/subpartner/change-password', {
+      const response = await axios.post('http://localhost:8500/api/subpartner/change-password', {
         email,
         oldPassword,
         newPassword,

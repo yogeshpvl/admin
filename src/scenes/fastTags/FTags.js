@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Box, Button, Dialog, DialogTitle, DialogContent,
   TextField, DialogActions, IconButton, MenuItem, Select,
-  InputLabel, FormControl
+  InputLabel, FormControl, Tabs, Tab
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -48,6 +48,7 @@ const FTags = () => {
   const [selectedAgent, setSelectedAgent] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [assignOpen, setAssignOpen] = useState(false);
+  const [tabValue, setTabValue] = useState(0); // State for active tab
   const admin = JSON.parse(localStorage.getItem("FTadmin"));
 
   useEffect(() => {
@@ -57,8 +58,7 @@ const FTags = () => {
 
   const fetchFastTags = async () => {
     try {
-      const response = await axios.get(`https://api.aktollpark.com/api/tags/createdBy/${admin?._id}`);
-      console.log("response.data",response.data)
+      const response = await axios.get(`http://localhost:8500/api/tags/createdBy/${admin?._id}`);
       setFastTags(response.data);
     } catch (error) {
       console.error("Error fetching FastTags:", error);
@@ -67,7 +67,7 @@ const FTags = () => {
 
   const fetchAgents = async () => {
     try {
-      const response = await axios.get("https://api.aktollpark.com/api/agent/getAllAgents");
+      const response = await axios.get("http://localhost:8500/api/agent/getAllAgents");
       setAgents(response.data.data);
     } catch (error) {
       console.error("Error fetching agents:", error);
@@ -98,10 +98,10 @@ const FTags = () => {
 
   const handleSave = async () => {
     try {
-      await axios.post("https://api.aktollpark.com/api/tags", {
+      await axios.post("http://localhost:8500/api/tags", {
         tags: newFastTags,
         createdBy: admin.name,
-        createdId: admin._id,
+        createdId: admin._id
       });
       fetchFastTags();
       setAddOpen(false);
@@ -126,7 +126,7 @@ const FTags = () => {
     }
 
     try {
-      await axios.put("https://api.aktollpark.com/api/tags/assign", {
+      await axios.put("http://localhost:8500/api/tags/assign", {
         tags: selectedTags,
         agentId: selectedAgent
       });
@@ -139,7 +139,6 @@ const FTags = () => {
     }
   };
 
-  console.log("admin----",admin)
   const handleExcelUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -151,14 +150,14 @@ const FTags = () => {
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       const data = XLSX.utils.sheet_to_json(sheet);
 
-      const formatted = data.map(tag => ({
-        ...tag,
-        createdBy: admin.name,
-        createdId: admin._id
-      }));
- 
+      const formatted = data.map(tag => ({ ...tag }));
+
       try {
-        await axios.post("https://api.aktollpark.com/api/tags", { tags: formatted });
+        await axios.post("http://localhost:8500/api/tags", {
+          tags: formatted,
+          createdBy: admin.name,
+          createdId: admin._id
+        });
         fetchFastTags();
         alert("Tags uploaded successfully");
       } catch (err) {
@@ -190,7 +189,7 @@ const FTags = () => {
       field: "assignedAgent",
       headerName: "Agent Name",
       flex: 1,
-      valueGetter: (params) => params?.name , // Access agent name safely
+      valueGetter: (params) => params?.name || "", // Access agent name safely
     },
     { field: "createdBy", headerName: "Created By", flex: 1 },
     {
@@ -198,7 +197,6 @@ const FTags = () => {
       headerName: "Created At",
       flex: 1,
       valueGetter: (params) => {
-    
         const date = new Date(params);
         if (!params) return "";
         return date.toLocaleString("en-IN", {
@@ -211,29 +209,26 @@ const FTags = () => {
           hour12: true,
         });
       },
-     
     },
     {
       field: "updatedAt",
       headerName: "Days complete",
       flex: 1,
       valueGetter: (params) => {
-        const updatedAt = new Date(params); // Get the updatedAt date
-        if (!updatedAt) return ""; // If updatedAt is not available, return empty string
-        
-        const currentDate = new Date(); // Get the current date
-        const timeDifference = currentDate - updatedAt; // Difference in milliseconds
-        
-        // Calculate days by dividing by milliseconds in a day (1000 * 60 * 60 * 24)
+        const updatedAt = new Date(params);
+        if (!updatedAt) return "";
+        const currentDate = new Date();
+        const timeDifference = currentDate - updatedAt;
         const daysDifference = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
-        
-        return `${daysDifference} days ago`; // Display the number of days
+        return `${daysDifference} days ago`;
       },
     }
-    
-    
-    
   ];
+
+  // Filter tags based on tab selection
+  const filteredTags = tabValue === 0
+    ? fastTags.filter(tag => tag.assignedAgent && tag.assignedAgent._id) // Assigned tags
+    : fastTags.filter(tag => !tag.assignedAgent || !tag.assignedAgent._id); // Not assigned tags
 
   return (
     <Box m="20px">
@@ -247,8 +242,19 @@ const FTags = () => {
         </Button>
       </Box>
 
+      {/* Tabs for Assigned and Not Assigned */}
+      <Tabs
+        value={tabValue}
+        onChange={(event, newValue) => setTabValue(newValue)}
+        aria-label="FastTags Tabs"
+        sx={{ mb: 2 }}
+      >
+        <Tab label="Assigned" />
+        <Tab label="Not Assigned" />
+      </Tabs>
+
       <DataGrid
-        rows={fastTags}
+        rows={filteredTags}
         columns={columns}
         getRowId={(row) => row._id || row.kitNo}
         checkboxSelection
@@ -264,14 +270,12 @@ const FTags = () => {
           {newFastTags.map((tag, index) => (
             <Box key={index} display="flex" alignItems="center" gap="10px">
               <TextField name="kitNo" label="Tag ID" size="small" fullWidth value={tag.kitNo} onChange={(e) => handleInputChange(index, e)} sx={{ mt: 2 }} />
-
               <FormControl fullWidth sx={{ mt: 2 }}>
                 <InputLabel>Tag Class</InputLabel>
                 <Select label="Tag Class" size="small" name="tagClass" value={tag.tagClass} onChange={(e) => handleInputChange(index, e)}>
                   {tagOptions.map(opt => <MenuItem key={opt.tagClass} value={opt.tagClass}>{opt.tagClass}</MenuItem>)}
                 </Select>
               </FormControl>
-
               <FormControl fullWidth sx={{ mt: 2 }}>
                 <InputLabel>Mapper Class</InputLabel>
                 <Select label="Mapper Class" size="small" name="mapperClass" value={tag.mapperClass} onChange={(e) => handleInputChange(index, e)} disabled={!tag.tagClass}>
@@ -280,7 +284,6 @@ const FTags = () => {
                   ))}
                 </Select>
               </FormControl>
-
               {index > 0 && <IconButton onClick={() => removeTagField(index)}><DeleteIcon color="error" /></IconButton>}
             </Box>
           ))}

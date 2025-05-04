@@ -70,7 +70,7 @@ const [deductReason, setDeductReason] = useState("");
 
   const fetchWalletHistory = async () => {
     try {
-      const res = await axios.get(`https://api.aktollpark.com/wallet-details/${agent._id}`);
+      const res = await axios.get(`http://localhost:8500/wallet-details/${agent._id}`);
       setWalletHistory(res.data.transactions || []);
       setWallet(res.data.balance)
     } catch (err) {
@@ -111,6 +111,25 @@ const [deductReason, setDeductReason] = useState("");
                 <strong>Created At:</strong> {moment(agent.createdAt).format("DD-MM-YYYY")} ({createdDaysAgo} days ago)
               </Typography>
             </Stack>
+            <Button
+  variant="outlined"
+  color={agent.agentStatus === "blocked" ? "success" : "error"}
+  onClick={async () => {
+    try {
+      await axios.put(`${Production_URL}/agent/block/${agent._id}`);
+      alert(`Agent ${agent.agentStatus === "blocked" ? "unblocked" : "blocked"} successfully.`);
+      agent.agentStatus = agent.agentStatus === "blocked" ? "active" : "blocked"; 
+      navigate('/agents'); 
+    } catch (error) {
+      console.error("Error blocking/unblocking agent:", error);
+      alert("Failed to update agent status.");
+    }
+  }}
+>
+  {agent.agentStatus === "blocked" ? "Unblock Agent" : "Block Agent"}
+</Button>
+<Typography><strong>Status:</strong> {agent.agentStatus}</Typography>
+
 
             <Divider sx={{ my: 2 }} />
 
