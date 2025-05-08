@@ -1,11 +1,21 @@
 import React, { useState } from "react";
-import { Box, Button, TextField, Typography, Paper, useTheme } from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+  useTheme,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from "@mui/material";
 import { styled } from "@mui/system";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Production_URL } from "../ApiURL";
 
-// Move LoginContainer and other styled components outside the functional component
 const LoginContainer = styled(Paper)({
   padding: "40px",
   maxWidth: "400px",
@@ -29,12 +39,23 @@ const StyledButton = styled(Button)({
   width: "100%",
 });
 
+const ForgotPasswordLink = styled(Typography)({
+  marginTop: "10px",
+  cursor: "pointer",
+  color: "#1976d2",
+  "&:hover": {
+    textDecoration: "underline",
+  },
+});
+
 const Login = () => {
   const theme = useTheme();
   const navigate = useNavigate();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotError, setForgotError] = useState("");
 
-  // Handle input change
   const handleChange = (e) => {
     const { name, value } = e.target;
     setLoginData((prev) => ({ ...prev, [name]: value }));
@@ -42,7 +63,6 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
-
     try {
       const config = {
         url: "/subpartner/adminLogin",
@@ -53,18 +73,55 @@ const Login = () => {
       };
       let res = await axios(config);
       if (res.status === 200) {
-      
         localStorage.setItem("FTadmin", JSON.stringify(res.data.data));
+        localStorage.setItem("token", res.data.token); // Store token for protected requests
         navigate("/dashboard");
       }
     } catch (error) {
-      console.log(error);
       const errorMessage =
-      error.response && error.response.data && error.response.data.message
-        ? error.response.data.message
-        : "Login failed. Please try again.";
-    alert(errorMessage); // Display the error message in an alert
-      
+        error.response && error.response.data && error.response.data.error
+          ? error.response.data.error
+          : "Login failed. Please try again.";
+      alert(errorMessage);
+    }
+  };
+
+  const handleForgotPasswordOpen = () => setForgotPasswordOpen(true);
+  const handleForgotPasswordClose = () => {
+    setForgotPasswordOpen(false);
+    setForgotEmail("");
+    setForgotError("");
+  };
+
+  const handleForgotEmailChange = (e) => {
+    setForgotEmail(e.target.value);
+    setForgotError("");
+  };
+
+  const handleForgotPasswordSubmit = async () => {
+    if (!forgotEmail) {
+      setForgotError("Email is required");
+      return;
+    }
+    try {
+      const config = {
+        url: "/subpartner/reset-password-request",
+        method: "post",
+        baseURL: Production_URL,
+        headers: { "content-type": "application/json" },
+        data: { email: forgotEmail },
+      };
+      const res = await axios(config);
+      if (res.status === 200) {
+        alert("Password reset link sent to your email.");
+        handleForgotPasswordClose();
+      }
+    } catch (error) {
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Failed to send reset link. Please try again.";
+      setForgotError(errorMessage);
     }
   };
 
@@ -76,7 +133,6 @@ const Login = () => {
           Please enter your login details
         </Typography>
 
-        {/* Email Field */}
         <TextField
           label="Email"
           name="email"
@@ -88,7 +144,6 @@ const Login = () => {
           autoComplete="off"
         />
 
-        {/* Password Field */}
         <TextField
           label="Password"
           name="password"
@@ -101,10 +156,39 @@ const Login = () => {
           autoComplete="off"
         />
 
+        <ForgotPasswordLink onClick={handleForgotPasswordOpen}>
+          Forgot Password?
+        </ForgotPasswordLink>
+
         <StyledButton variant="contained" color="primary" onClick={handleLogin}>
           Login
         </StyledButton>
       </LoginContainer>
+
+      <Dialog open={forgotPasswordOpen} onClose={handleForgotPasswordClose} maxWidth="sm" fullWidth>
+        <DialogTitle>Forgot Password</DialogTitle>
+        <DialogContent>
+          <Typography mb={2}>Enter your email to receive a password reset link.</Typography>
+          <TextField
+            label="Email"
+            variant="outlined"
+            fullWidth
+            value={forgotEmail}
+            onChange={handleForgotEmailChange}
+            error={!!forgotError}
+            helperText={forgotError}
+            autoComplete="off"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleForgotPasswordClose} color="secondary">
+            Cancel
+          </Button>
+          <Button onClick={handleForgotPasswordSubmit} variant="contained" color="primary">
+            Send Reset Link
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

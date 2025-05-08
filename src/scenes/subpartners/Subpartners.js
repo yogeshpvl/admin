@@ -11,7 +11,7 @@ import {
   DialogActions,
   MenuItem,
   IconButton,
-  InputBase
+  InputBase,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
@@ -24,6 +24,8 @@ import Header from "../../components/Header";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SearchIcon from "@mui/icons-material/Search";
+import BlockIcon from "@mui/icons-material/Block";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const Subpartners = () => {
   const theme = useTheme();
@@ -35,7 +37,6 @@ const Subpartners = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSubpartner, setSelectedSubpartner] = useState(null);
 
-  console.log("data---",data)
   const initialSubpartnerState = {
     name: "",
     state: "",
@@ -52,9 +53,9 @@ const Subpartners = () => {
       paymentGatewayFee: 0,
       platformFee: 0,
       gst: 0,
-    }
+    },
   };
-  
+
   const [newSubpartner, setNewSubpartner] = useState(initialSubpartnerState);
 
   const columns = [
@@ -74,7 +75,18 @@ const Subpartners = () => {
     { field: "city", headerName: "City" },
     { field: "state", headerName: "State" },
     { field: "type", headerName: "Type" },
-
+    {
+      field: "status",
+      headerName: "Status",
+      flex: 0.5,
+      renderCell: (params) => (
+        <Typography
+          color={params.value === "blocked" ? colors.redAccent[500] : colors.greenAccent[500]}
+        >
+          {params.value.charAt(0).toUpperCase() + params.value.slice(1)}
+        </Typography>
+      ),
+    },
     {
       field: "role",
       headerName: "Role",
@@ -98,7 +110,7 @@ const Subpartners = () => {
     {
       field: "actions",
       headerName: "Actions",
-      flex: 0.5,
+      flex: 0.7,
       renderCell: (params) => (
         <Box>
           <IconButton color="primary" onClick={() => handleEditClick(params.row)}>
@@ -107,9 +119,15 @@ const Subpartners = () => {
           <IconButton color="secondary" onClick={() => handleDelete(params.row._id)}>
             <DeleteIcon />
           </IconButton>
+          <IconButton
+            color={params.row.status === "blocked" ? "success" : "error"}
+            onClick={() => handleBlockToggle(params.row)}
+          >
+            {params.row.status === "blocked" ? <CheckCircleIcon /> : <BlockIcon />}
+          </IconButton>
         </Box>
       ),
-    }
+    },
   ];
 
   useEffect(() => {
@@ -118,7 +136,7 @@ const Subpartners = () => {
 
   const getSubpartners = () => {
     axios
-      .get(Production_URL + "/subpartner/getSubpartners")
+      .get(`${Production_URL}/subpartner/getSubpartners`)
       .then((response) => {
         setData(response.data.data);
       })
@@ -130,7 +148,6 @@ const Subpartners = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
 
-    // Validation
     const newErrors = {};
     if (!newSubpartner.name) newErrors.name = "Name is required";
     if (!newSubpartner.number) newErrors.number = "Phone Number is required";
@@ -168,7 +185,7 @@ const Subpartners = () => {
   const handleDelete = async (id) => {
     const confirmDelete = window.confirm("Are you sure you want to delete this subpartner?");
     if (!confirmDelete) return;
-  
+
     try {
       await axios.delete(`${Production_URL}/subpartner/delete/${id}`);
       getSubpartners();
@@ -176,7 +193,36 @@ const Subpartners = () => {
       console.error("Failed to delete subpartner", error);
     }
   };
-  
+
+  const handleBlockToggle = async (subpartner) => {
+    const newStatus = subpartner.status === "blocked" ? "active" : "blocked";
+    const confirmAction = window.confirm(
+      `Are you sure you want to ${newStatus === "blocked" ? "block" : "unblock"} ${subpartner.name}?`
+    );
+    if (!confirmAction) return;
+
+    try {
+      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      await axios.put(
+        `${Production_URL}/subpartner/block/${subpartner._id}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      alert(`Subpartner ${newStatus === "blocked" ? "blocked" : "unblocked"} successfully`);
+      getSubpartners();
+    } catch (error) {
+      const errorMessage =
+        error.response && error.response.data && error.response.data.message
+          ? error.response.data.message
+          : "Failed to update status. Please try again.";
+      alert(errorMessage);
+    }
+  };
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
@@ -311,6 +357,7 @@ const Subpartners = () => {
             >
               <MenuItem value="admin">Admin</MenuItem>
               <MenuItem value="subpartner">Subpartner</MenuItem>
+              <MenuItem value="manager">Manager</MenuItem>
             </TextField>
             <TextField
               name="type"
@@ -327,91 +374,92 @@ const Subpartners = () => {
               <MenuItem value="Postpaid">Postpaid</MenuItem>
             </TextField>
             {newSubpartner.role === "subpartner" && newSubpartner.type === "Postpaid" && (
-  <>
-    <Typography variant="h6" mt={2}>FastTag Pricing Details</Typography>
-    <TextField
-      name="basePrice"
-      label="Base Price"
-      type="number"
-      fullWidth
-      value={newSubpartner?.fastTagPrice?.basePrice}
-      onChange={(e) =>
-        setNewSubpartner((prev) => ({
-          ...prev,
-          fastTagPrice: {
-            ...prev.fastTagPrice,
-            basePrice: Number(e.target.value),
-          },
-        }))
-      }
-    />
-    <TextField
-      name="activationFee"
-      label="Activation Fee"
-      type="number"
-      fullWidth
-      value={newSubpartner?.fastTagPrice?.activationFee}
-      onChange={(e) =>
-        setNewSubpartner((prev) => ({
-          ...prev,
-          fastTagPrice: {
-            ...prev.fastTagPrice,
-            activationFee: Number(e.target.value),
-          },
-        }))
-      }
-    />
-    <TextField
-      name="paymentGatewayFee"
-      label="Payment Gateway Fee"
-      type="number"
-      fullWidth
-      value={newSubpartner?.fastTagPrice?.paymentGatewayFee}
-      onChange={(e) =>
-        setNewSubpartner((prev) => ({
-          ...prev,
-          fastTagPrice: {
-            ...prev.fastTagPrice,
-            paymentGatewayFee: Number(e.target.value),
-          },
-        }))
-      }
-    />
-    <TextField
-      name="platformFee"
-      label="Platform Fee"
-      type="number"
-      fullWidth
-      value={newSubpartner?.fastTagPrice?.platformFee}
-      onChange={(e) =>
-        setNewSubpartner((prev) => ({
-          ...prev,
-          fastTagPrice: {
-            ...prev.fastTagPrice,
-            platformFee: Number(e.target.value),
-          },
-        }))
-      }
-    />
-    <TextField
-      name="gst"
-      label="GST"
-      type="number"
-      fullWidth
-      value={newSubpartner?.fastTagPrice.gst}
-      onChange={(e) =>
-        setNewSubpartner((prev) => ({
-          ...prev,
-          fastTagPrice: {
-            ...prev.fastTagPrice,
-            gst: Number(e.target.value),
-          },
-        }))
-      }
-    />
-  </>
-)}
-
+              <>
+                <Typography variant="h6" mt={2}>
+                  FastTag Pricing Details
+                </Typography>
+                <TextField
+                  name="basePrice"
+                  label="Base Price"
+                  type="number"
+                  fullWidth
+                  value={newSubpartner?.fastTagPrice?.basePrice}
+                  onChange={(e) =>
+                    setNewSubpartner((prev) => ({
+                      ...prev,
+                      fastTagPrice: {
+                        ...prev.fastTagPrice,
+                        basePrice: Number(e.target.value),
+                      },
+                    }))
+                  }
+                />
+                <TextField
+                  name="activationFee"
+                  label="Activation Fee"
+                  type="number"
+                  fullWidth
+                  value={newSubpartner?.fastTagPrice?.activationFee}
+                  onChange={(e) =>
+                    setNewSubpartner((prev) => ({
+                      ...prev,
+                      fastTagPrice: {
+                        ...prev.fastTagPrice,
+                        activationFee: Number(e.target.value),
+                      },
+                    }))
+                  }
+                />
+                <TextField
+                  name="paymentGatewayFee"
+                  label="Payment Gateway Fee"
+                  type="number"
+                  fullWidth
+                  value={newSubpartner?.fastTagPrice?.paymentGatewayFee}
+                  onChange={(e) =>
+                    setNewSubpartner((prev) => ({
+                      ...prev,
+                      fastTagPrice: {
+                        ...prev.fastTagPrice,
+                        paymentGatewayFee: Number(e.target.value),
+                      },
+                    }))
+                  }
+                />
+                <TextField
+                  name="platformFee"
+                  label="Platform Fee"
+                  type="number"
+                  fullWidth
+                  value={newSubpartner?.fastTagPrice?.platformFee}
+                  onChange={(e) =>
+                    setNewSubpartner((prev) => ({
+                      ...prev,
+                      fastTagPrice: {
+                        ...prev.fastTagPrice,
+                        platformFee: Number(e.target.value),
+                      },
+                    }))
+                  }
+                />
+                <TextField
+                  name="gst"
+                  label="GST"
+                  type="number"
+                  fullWidth
+                  value={newSubpartner?.fastTagPrice.gst}
+                  onChange={(e) =>
+                    setNewSubpartner((prev) => ({
+                      ...prev,
+                      fastTagPrice: {
+                        ...prev.fastTagPrice,
+                        gst: Number(e.target.value),
+                      },
+                    }))
+                  }
+                />
+              </>
+            )}
           </Box>
         </DialogContent>
         <DialogActions>
@@ -431,9 +479,15 @@ const Subpartners = () => {
           "& .MuiDataGrid-root": { border: "none" },
           "& .MuiDataGrid-cell": { borderBottom: "none" },
           "& .name-column--cell": { color: colors.greenAccent[300] },
-          "& .MuiDataGrid-columnHeaders": { backgroundColor: colors.blueAccent[700], borderBottom: "none" },
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: colors.blueAccent[700],
+            borderBottom: "none",
+          },
           "& .MuiDataGrid-virtualScroller": { backgroundColor: colors.primary[400] },
-          "& .MuiDataGrid-footerContainer": { borderTop: "none", backgroundColor: colors.blueAccent[700] },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "none",
+            backgroundColor: colors.blueAccent[700],
+          },
           "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
         }}
       >
