@@ -91,6 +91,7 @@ import Report from "./scenes/report/Repot";
 import ChangePassword from "./scenes/ChangePassword";
 import SubPartnerReport from "./scenes/SubPartnerReport";
 import ResetPassword from "./scenes/ResetPassword";
+import Dashboard1 from "./scenes/Dashboard1";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -124,7 +125,7 @@ function App() {
       "/agentDetails/:id",
     ],
     subpartner: [
-      "/dashboard",
+      "/dashboard1",
       "/agents",
       "/fasttags",
       "/subreports",
@@ -132,7 +133,7 @@ function App() {
       "/agentDetails/:id",
     ],
     manager: [
-      "/dashboard",
+      "/dashboard1",
       "/fasttags",
       "/reports",
       "/change-password",
@@ -174,6 +175,16 @@ function App() {
                 element={
                   userRole && isRouteAllowed("/dashboard") ? (
                     <Dashboard />
+                  ) : (
+                    <Navigate to="/" replace />
+                  )
+                }
+              />
+                <Route
+                path="/dashboard1"
+                element={
+                  userRole && isRouteAllowed("/dashboard1") ? (
+                    <Dashboard1 />
                   ) : (
                     <Navigate to="/" replace />
                   )

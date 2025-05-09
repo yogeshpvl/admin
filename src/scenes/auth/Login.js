@@ -74,8 +74,20 @@ const Login = () => {
       let res = await axios(config);
       if (res.status === 200) {
         localStorage.setItem("FTadmin", JSON.stringify(res.data.data));
-        localStorage.setItem("token", res.data.token); // Store token for protected requests
-        navigate("/dashboard");
+        localStorage.setItem("token", res.data.token);
+        console.log("User Data:", res.data.data);
+        console.log("Role:", res.data.data.role);
+  
+        if (res.data.data.role === "admin") {
+          navigate("/dashboard");
+        } else if (res.data.data.role === "subpartner") {
+          navigate("/dashboard1");
+        } else {
+         
+          navigate("/ fasttags");
+          // console.error("Unknown role:", res.data.data.role);
+          // alert("Invalid role. Please contact support.");
+        }
       }
     } catch (error) {
       const errorMessage =

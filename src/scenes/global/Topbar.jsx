@@ -43,14 +43,14 @@ const Topbar = () => {
       {/* SEARCH BAR */}
       <Box
         display="flex"
-        backgroundColor={colors.primary[400]}
-        borderRadius="3px"
+        // backgroundColor={colors.primary[400]}
+        // borderRadius="3px"
         p="5px 10px"
       >
-        <InputBase placeholder="Search..." />
-        <IconButton type="submit">
+        {/* <InputBase placeholder="Search..." /> */}
+        {/* <IconButton type="submit">
           <SearchIcon />
-        </IconButton>
+        </IconButton> */}
       </Box>
 
       {/* ICONS */}

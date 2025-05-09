@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import {
   Box, Button, Dialog, DialogTitle, DialogContent,
   TextField, DialogActions, IconButton, MenuItem, Select,
-  InputLabel, FormControl, Tabs, Tab
+  InputLabel, FormControl, Tabs, Tab, CircularProgress
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -48,9 +48,11 @@ const FTags = () => {
   const [selectedAgent, setSelectedAgent] = useState("");
   const [selectedTags, setSelectedTags] = useState([]);
   const [assignOpen, setAssignOpen] = useState(false);
-  const [tabValue, setTabValue] = useState(0); // State for active tab
+  const [tabValue, setTabValue] = useState(0);
+  const [loading, setLoading] = useState(false);
   const admin = JSON.parse(localStorage.getItem("FTadmin"));
 
+  console.log("fastTags",fastTags)
   useEffect(() => {
     fetchFastTags();
     fetchAgents();
@@ -58,10 +60,25 @@ const FTags = () => {
 
   const fetchFastTags = async () => {
     try {
-      const response = await axios.get(`https://api.aktollpark.com/api/tags/createdBy/${admin?._id}`);
+      setLoading(true);
+      if (!admin) {
+        throw new Error("Admin data is not available");
+      }
+
+      const url =
+        admin.role === "subpartner"
+          ? `https://api.aktollpark.com/api/tags/createdBy/${admin._id}`
+          : "https://api.aktollpark.com/api/tags";
+
+      const response = await axios.get(url);
+
+      console.log("response backen",response.data)
       setFastTags(response.data);
     } catch (error) {
-      console.error("Error fetching FastTags:", error);
+      console.error("Error fetching FastTags:", error.message);
+      alert("Failed to fetch FastTags. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -71,6 +88,8 @@ const FTags = () => {
       setAgents(response.data.data);
     } catch (error) {
       console.error("Error fetching agents:", error);
+      alert("Failed to fetch agents. Please try again.");
+      setAgents([]);
     }
   };
 
@@ -108,6 +127,7 @@ const FTags = () => {
       setNewFastTags([{ kitNo: "", tagClass: "", mapperClass: "", color: "", assignedTo: "" }]);
     } catch (error) {
       console.error("Error saving FastTags:", error);
+      alert("Failed to save FastTags. Please try again.");
     }
   };
 
@@ -136,6 +156,7 @@ const FTags = () => {
       setAssignOpen(false);
     } catch (error) {
       console.error("Error assigning FastTags:", error);
+      alert("Failed to assign FastTags. Please try again.");
     }
   };
 
@@ -186,10 +207,19 @@ const FTags = () => {
     { field: "tagClass", headerName: "Tag Class", flex: 1 },
     { field: "mapperClass", headerName: "Mapper Class", flex: 1 },
     {
-      field: "assignedAgent",
+      field: "assignedTo",
       headerName: "Agent Name",
       flex: 1,
-      valueGetter: (params) => params?.name || "", // Access agent name safely
+      renderCell: (agent) => {
+  
+        return (
+          <Box
+           
+          >
+            {agent?.row?.assignedTo?.name ?agent?.row?.assignedTo?.name : "Not Assigned"}
+          </Box>
+        );
+      },
     },
     { field: "createdBy", headerName: "Created By", flex: 1 },
     {
@@ -212,7 +242,7 @@ const FTags = () => {
     },
     {
       field: "updatedAt",
-      headerName: "Days complete",
+      headerName: "Days Complete",
       flex: 1,
       valueGetter: (params) => {
         const updatedAt = new Date(params);
@@ -225,94 +255,187 @@ const FTags = () => {
     }
   ];
 
-  // Filter tags based on tab selection
   const filteredTags = tabValue === 0
-    ? fastTags.filter(tag => tag.assignedAgent && tag.assignedAgent._id) // Assigned tags
-    : fastTags.filter(tag => !tag.assignedAgent || !tag.assignedAgent._id); // Not assigned tags
+    ? fastTags.filter(tag => tag.status === "Assigned")
+    : fastTags.filter(tag => tag.status !== "Assigned");
 
   return (
     <Box m="20px">
-      <Box display="flex" gap={2} mb={2}>
-        <Button variant="contained" color="primary" onClick={() => setAddOpen(true)}>Add Fast Tags</Button>
-        <Button variant="contained" color="secondary" onClick={handleBulkAssign}>Assign Fast Tags</Button>
-        <Button variant="outlined" startIcon={<DownloadIcon />} onClick={handleSampleDownload}>Download Sample</Button>
-        <Button variant="outlined" component="label" startIcon={<UploadIcon />}>
-          Upload Excel
-          <input type="file" hidden accept=".xlsx, .xls" onChange={handleExcelUpload} />
-        </Button>
-      </Box>
+      {loading ? (
+        <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
+          <CircularProgress sx={{ color: "#8B0000" }} />
+        </Box>
+      ) : (
+        <>
+          <Box display="flex" gap={2} mb={2}>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#8B0000", "&:hover": { backgroundColor: "#B22222" } }}
+              onClick={() => setAddOpen(true)}
+            >
+              Add Fast Tags
+            </Button>
+            <Button
+              variant="contained"
+              sx={{ backgroundColor: "#8B0000", "&:hover": { backgroundColor: "#B22222" } }}
+              onClick={handleBulkAssign}
+            >
+              Assign Fast Tags
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              sx={{ borderColor: "#8B0000", color: "#8B0000", "&:hover": { borderColor: "#B22222", color: "#B22222" } }}
+              onClick={handleSampleDownload}
+            >
+              Download Sample
+            </Button>
+            <Button
+              variant="outlined"
+              component="label"
+              startIcon={<UploadIcon />}
+              sx={{ borderColor: "#8B0000", color: "#8B0000", "&:hover": { borderColor: "#B22222", color: "#B22222" } }}
+            >
+              Upload Excel
+              <input type="file" hidden accept=".xlsx, .xls" onChange={handleExcelUpload} />
+            </Button>
+          </Box>
 
-      {/* Tabs for Assigned and Not Assigned */}
-      <Tabs
-        value={tabValue}
-        onChange={(event, newValue) => setTabValue(newValue)}
-        aria-label="FastTags Tabs"
-        sx={{ mb: 2 }}
-      >
-        <Tab label="Assigned" />
-        <Tab label="Not Assigned" />
-      </Tabs>
+          <Tabs
+            value={tabValue}
+            onChange={(event, newValue) => setTabValue(newValue)}
+            aria-label="FastTags Tabs"
+            sx={{
+              mb: 2,
+              "& .MuiTab-root": { color: "#333", fontFamily: "Roboto, sans-serif" },
+              "& .Mui-selected": { color: "#8B0000" },
+              "& .MuiTabs-indicator": { backgroundColor: "#8B0000" },
+            }}
+          >
+            <Tab label="Assigned" />
+            <Tab label="Not Assigned" />
+          </Tabs>
 
-      <DataGrid
-        rows={filteredTags}
-        columns={columns}
-        getRowId={(row) => row._id || row.kitNo}
-        checkboxSelection
-        onRowSelectionModelChange={(model) => setSelectedTags(model)}
-        autoHeight
-        pageSizeOptions={[5, 10, 20]}
-      />
+          <DataGrid
+            rows={filteredTags}
+            columns={columns}
+            getRowId={(row) => row._id || row.kitNo}
+            checkboxSelection
+            onRowSelectionModelChange={(model) => setSelectedTags(model)}
+            autoHeight
+            pageSizeOptions={[5, 10, 20]}
+            sx={{
+              "& .MuiDataGrid-columnHeaders": { backgroundColor: "#F8F9FA", color: "#8B0000" },
+              "& .MuiDataGrid-row": { "&:hover": { backgroundColor: "#F0F0F0" } },
+            }}
+          />
 
-      {/* Add Modal */}
-      <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Fast Tags</DialogTitle>
-        <DialogContent>
-          {newFastTags.map((tag, index) => (
-            <Box key={index} display="flex" alignItems="center" gap="10px">
-              <TextField name="kitNo" label="Tag ID" size="small" fullWidth value={tag.kitNo} onChange={(e) => handleInputChange(index, e)} sx={{ mt: 2 }} />
+          <Dialog open={addOpen} onClose={() => setAddOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ backgroundColor: "#8B0000", color: "#FFFFFF" }}>
+              Add New Fast Tags
+            </DialogTitle>
+            <DialogContent>
+              {newFastTags.map((tag, index) => (
+                <Box key={index} display="flex" alignItems="center" gap="10px">
+                  <TextField
+                    name="kitNo"
+                    label="Tag ID"
+                    size="small"
+                    fullWidth
+                    value={tag.kitNo}
+                    onChange={(e) => handleInputChange(index, e)}
+                    sx={{ mt: 2 }}
+                  />
+                  <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel>Tag Class</InputLabel>
+                    <Select
+                      label="Tag Class"
+                      size="small"
+                      name="tagClass"
+                      value={tag.tagClass}
+                      onChange={(e) => handleInputChange(index, e)}
+                    >
+                      {tagOptions.map(opt => (
+                        <MenuItem key={opt.tagClass} value={opt.tagClass}>{opt.tagClass}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth sx={{ mt: 2 }}>
+                    <InputLabel>Mapper Class</InputLabel>
+                    <Select
+                      label="Mapper Class"
+                      size="small"
+                      name="mapperClass"
+                      value={tag.mapperClass}
+                      onChange={(e) => handleInputChange(index, e)}
+                      disabled={!tag.tagClass}
+                    >
+                      {mapperOptions
+                        .filter(m => m.tagClass === tag.tagClass)
+                        .map(opt => (
+                          <MenuItem key={opt.mapperClass} value={opt.mapperClass}>{opt.mapperClass}</MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                  {index > 0 && (
+                    <IconButton onClick={() => removeTagField(index)}>
+                      <DeleteIcon color="error" />
+                    </IconButton>
+                  )}
+                </Box>
+              ))}
+              <Button startIcon={<AddIcon />} onClick={addNewTagField} sx={{ mt: 2 }}>
+                Add Another
+              </Button>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setAddOpen(false)} color="secondary">
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "#8B0000", "&:hover": { backgroundColor: "#B22222" } }}
+                onClick={handleSave}
+              >
+                Save
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog open={assignOpen} onClose={() => setAssignOpen(false)} maxWidth="sm" fullWidth>
+            <DialogTitle sx={{ backgroundColor: "#8B0000", color: "#FFFFFF" }}>
+              Assign Fast Tags
+            </DialogTitle>
+            <DialogContent>
               <FormControl fullWidth sx={{ mt: 2 }}>
-                <InputLabel>Tag Class</InputLabel>
-                <Select label="Tag Class" size="small" name="tagClass" value={tag.tagClass} onChange={(e) => handleInputChange(index, e)}>
-                  {tagOptions.map(opt => <MenuItem key={opt.tagClass} value={opt.tagClass}>{opt.tagClass}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth sx={{ mt: 2 }}>
-                <InputLabel>Mapper Class</InputLabel>
-                <Select label="Mapper Class" size="small" name="mapperClass" value={tag.mapperClass} onChange={(e) => handleInputChange(index, e)} disabled={!tag.tagClass}>
-                  {mapperOptions.filter(m => m.tagClass === tag.tagClass).map(opt => (
-                    <MenuItem key={opt.mapperClass} value={opt.mapperClass}>{opt.mapperClass}</MenuItem>
+                <InputLabel>Select Agent</InputLabel>
+                <Select
+                  label="Select Agent"
+                  size="small"
+                  value={selectedAgent}
+                  onChange={(e) => setSelectedAgent(e.target.value)}
+                >
+                  {agents.map((agent) => (
+                    <MenuItem key={agent._id} value={agent._id}>{agent.name}</MenuItem>
                   ))}
                 </Select>
               </FormControl>
-              {index > 0 && <IconButton onClick={() => removeTagField(index)}><DeleteIcon color="error" /></IconButton>}
-            </Box>
-          ))}
-          <Button startIcon={<AddIcon />} onClick={addNewTagField} sx={{ mt: 2 }}>Add Another</Button>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddOpen(false)} color="secondary">Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleSave}>Save</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Assign Modal */}
-      <Dialog open={assignOpen} onClose={() => setAssignOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Assign Fast Tags</DialogTitle>
-        <DialogContent>
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel>Select Agent</InputLabel>
-            <Select label="Select Agent" size="small" value={selectedAgent} onChange={(e) => setSelectedAgent(e.target.value)}>
-              {agents.map((agent) => (
-                <MenuItem key={agent._id} value={agent._id}>{agent.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAssignOpen(false)} color="secondary">Cancel</Button>
-          <Button variant="contained" color="primary" onClick={handleAssignSubmit}>Submit</Button>
-        </DialogActions>
-      </Dialog>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setAssignOpen(false)} color="secondary">
+                Cancel
+              </Button>
+              <Button
+                variant="contained"
+                sx={{ backgroundColor: "#8B0000", "&:hover": { backgroundColor: "#B22222" } }}
+                onClick={handleAssignSubmit}
+              >
+                Submit
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </>
+      )}
     </Box>
   );
 };

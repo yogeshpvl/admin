@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   Box,
@@ -68,17 +69,25 @@ const Subpartners = () => {
         </Typography>
       ),
       flex: 1,
+      minWidth: 120,
     },
-    { field: "name", headerName: "Name", flex: 1, cellClassName: "name-column--cell" },
-    { field: "number", headerName: "Phone Number", flex: 1 },
-    { field: "email", headerName: "Email", flex: 1 },
-    { field: "city", headerName: "City" },
-    { field: "state", headerName: "State" },
-    { field: "type", headerName: "Type" },
+    {
+      field: "name",
+      headerName: "Name",
+      flex: 1,
+      minWidth: 120,
+      cellClassName: "name-column--cell",
+    },
+    { field: "number", headerName: "Phone Number", flex: 1, minWidth: 120 },
+    { field: "email", headerName: "Email", flex: 1, minWidth: 150 },
+    { field: "city", headerName: "City", minWidth: 100 },
+    { field: "state", headerName: "State", minWidth: 100 },
+    { field: "type", headerName: "Type", minWidth: 100 },
     {
       field: "status",
       headerName: "Status",
       flex: 0.5,
+      minWidth: 100,
       renderCell: (params) => (
         <Typography
           color={params.value === "blocked" ? colors.redAccent[500] : colors.greenAccent[500]}
@@ -91,6 +100,7 @@ const Subpartners = () => {
       field: "role",
       headerName: "Role",
       flex: 1,
+      minWidth: 120,
       renderCell: (params) => (
         <Box
           display="flex"
@@ -110,7 +120,8 @@ const Subpartners = () => {
     {
       field: "actions",
       headerName: "Actions",
-      flex: 0.7,
+      flex: 1.2,
+      minWidth: 150,
       renderCell: (params) => (
         <Box>
           <IconButton color="primary" onClick={() => handleEditClick(params.row)}>
@@ -202,7 +213,7 @@ const Subpartners = () => {
     if (!confirmAction) return;
 
     try {
-      const token = localStorage.getItem("token"); // Assuming token is stored in localStorage
+      const token = localStorage.getItem("token");
       await axios.put(
         `${Production_URL}/subpartner/block/${subpartner._id}`,
         { status: newStatus },
@@ -249,6 +260,29 @@ const Subpartners = () => {
   const filteredData = data.filter((item) =>
     item.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Corrected fetchFastTags function (from previous discussion)
+  const fetchFastTags = async (admin) => {
+    try {
+      if (!admin) {
+        throw new Error("Admin data is not available");
+      }
+      const url =
+        admin.role === "manager"
+          ? `${Production_URL}/api/tags`
+          : `${Production_URL}/api/tags/createdBy/${admin._id}`;
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      return response.data; // Assuming setFastTags is handled elsewhere
+    } catch (error) {
+      console.error("Error fetching FastTags:", error.message);
+      alert("Failed to fetch FastTags. Please try again.");
+      return [];
+    }
+  };
 
   return (
     <Box m="20px">
@@ -319,31 +353,23 @@ const Subpartners = () => {
             <TextField
               name="city"
               label="City"
-              select
               fullWidth
               required
               value={newSubpartner.city}
               onChange={handleInputChange}
               error={!!errors.city}
               helperText={errors.city}
-            >
-              <MenuItem value="Bengaluru">Bengaluru</MenuItem>
-              <MenuItem value="Hyderabad">Hyderabad</MenuItem>
-              <MenuItem value="Chennai">Chennai</MenuItem>
-            </TextField>
+            />
             <TextField
               name="state"
               label="State"
-              select
               fullWidth
               required
               value={newSubpartner.state}
               onChange={handleInputChange}
               error={!!errors.state}
               helperText={errors.state}
-            >
-              <MenuItem value="Karnataka">Karnataka</MenuItem>
-            </TextField>
+            />
             <TextField
               name="role"
               label="Access Level"
@@ -475,6 +501,7 @@ const Subpartners = () => {
       <Box
         m="40px 0 0 0"
         height="75vh"
+        width="100%"
         sx={{
           "& .MuiDataGrid-root": { border: "none" },
           "& .MuiDataGrid-cell": { borderBottom: "none" },
@@ -489,6 +516,7 @@ const Subpartners = () => {
             backgroundColor: colors.blueAccent[700],
           },
           "& .MuiCheckbox-root": { color: `${colors.greenAccent[200]} !important` },
+          overflowX: "auto",
         }}
       >
         <DataGrid

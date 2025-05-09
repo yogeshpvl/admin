@@ -280,7 +280,7 @@ const Dashboard = () => {
         p="5px 10px"
         borderRadius="4px"
       >
-        ${transaction.amount}
+        {transaction.amount}.Rs
       </Box>
     </Box>
   ))}

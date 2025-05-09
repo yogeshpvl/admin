@@ -207,13 +207,13 @@ const Sidebar = () => {
 
             {admin.role === 'manager' && (
               <>
-                <Item
+                {/* <Item
                   title="Dashboard"
                   to="/dashboard1"
                   icon={<HomeOutlinedIcon />}
                   selected={selected}
                   setSelected={setSelected}
-                />
+                /> */}
                 <Item
                   title="Fast Tags"
                   to="/fasttags"
