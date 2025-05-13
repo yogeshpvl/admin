@@ -51,6 +51,7 @@ const FTags = () => {
   const [tabValue, setTabValue] = useState(0);
   const [loading, setLoading] = useState(false);
   const admin = JSON.parse(localStorage.getItem("FTadmin"));
+  console.log("admin",admin)
 
   console.log("fastTags",fastTags)
   useEffect(() => {
@@ -267,7 +268,8 @@ const FTags = () => {
         </Box>
       ) : (
         <>
-          <Box display="flex" gap={2} mb={2}>
+        {admin.role != "subpartner" ?
+        <Box display="flex" gap={2} mb={2}>
             <Button
               variant="contained"
               sx={{ backgroundColor: "#8B0000", "&:hover": { backgroundColor: "#B22222" } }}
@@ -299,7 +301,11 @@ const FTags = () => {
               Upload Excel
               <input type="file" hidden accept=".xlsx, .xls" onChange={handleExcelUpload} />
             </Button>
-          </Box>
+          </Box> 
+      :
+      <></>
+      }
+         
 
           <Tabs
             value={tabValue}

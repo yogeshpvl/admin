@@ -78,7 +78,7 @@ const ResetPassword = () => {
 
     // Determine the reset endpoint based on userType
     const endpoint =
-      userType === "subpartner"
+      userType === "subpartners"
         ? "/subpartner/reset-password"
         : userType === "agent"
         ? "/agent/reset-password"
