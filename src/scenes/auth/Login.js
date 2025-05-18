@@ -82,11 +82,14 @@ const Login = () => {
           navigate("/dashboard");
         } else if (res.data.data.role === "subpartner") {
           navigate("/dashboard1");
-        } else {
+        } else if (res.data.data.role === "manager") {
          
-          navigate("/ fasttags");
+          navigate("/fasttags");
           // console.error("Unknown role:", res.data.data.role);
           // alert("Invalid role. Please contact support.");
+        }
+        else {
+  navigate("/fasttags");
         }
       }
     } catch (error) {

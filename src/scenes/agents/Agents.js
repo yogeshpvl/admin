@@ -285,35 +285,28 @@ const Agents = () => {
               error={!!errors.password}
               helperText={errors.password}
             />
-            <TextField
+             <TextField
               name="city"
               label="City"
-              select
               fullWidth
-              required
+              type="city"
               value={newAgent.city}
               onChange={handleInputChange}
               error={!!errors.city}
               helperText={errors.city}
-            >
-              <MenuItem value="Bengaluru">Bengaluru</MenuItem>
-              <MenuItem value="Hyderabad">Hyderabad</MenuItem>
-              <MenuItem value="Chennai">Chennai</MenuItem>
-            </TextField>
-            <TextField
+            />
+           <TextField
               name="state"
-              label="State"
-              select
+              label="state"
               fullWidth
-              required
+              type="state"
               value={newAgent.state}
               onChange={handleInputChange}
               error={!!errors.state}
               helperText={errors.state}
-            >
-              <MenuItem value="Karnataka">Karnataka</MenuItem>
-            </TextField>
-            <FormControl fullWidth required error={!!errors.adminID}>
+            />
+          
+            <FormControl fullWidth  error={!!errors.adminID}>
               <InputLabel>TL Name</InputLabel>
               <Select
                 name="adminID"
@@ -321,11 +314,20 @@ const Agents = () => {
                 value={newAgent.adminID}
                 onChange={handleInputChange}
               >
-                {admins.map((admin) => (
+                {admin.role === "admin"  ?
+                 admins.map((admin) => (
                   <MenuItem key={admin._id} value={admin._id}>
                     {admin.name}
                   </MenuItem>
-                ))}
+                ))
+                :
+                 
+                  <MenuItem  value={admin._id}>
+                    {admin.name}
+                  </MenuItem>
+               
+              }
+               
               </Select>
               {errors.adminID && <Typography color="error" variant="caption">{errors.adminID}</Typography>}
             </FormControl>

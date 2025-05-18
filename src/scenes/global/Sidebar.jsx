@@ -43,6 +43,9 @@ const Sidebar = () => {
       sx={{
         "& .pro-sidebar-inner": {
           background: `${colors.primary[400]} !important`,
+          height: "100vh", // Ensure sidebar takes full height
+          display: "flex",
+          flexDirection: "column",
         },
         "& .pro-icon-wrapper": {
           backgroundColor: "transparent !important",
@@ -59,179 +62,186 @@ const Sidebar = () => {
       }}
     >
       <ProSidebar collapsed={isCollapsed}>
-        <Menu iconShape="square">
-          {/* LOGO AND MENU ICON */}
-          <MenuItem
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
-            style={{
-              margin: "10px 0 20px 0",
-              color: colors.grey[100],
+        <Box display="flex" flexDirection="column" height="100%">
+          <Menu iconShape="square">
+            {/* LOGO AND MENU ICON */}
+            <MenuItem
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              icon={isCollapsed ? <MenuOutlinedIcon /> : undefined}
+              style={{
+                // margin: "10px 0 20px 0",
+                color: colors.grey[100],
+              }}
+            >
+              {!isCollapsed && (
+                <Box
+                  display="flex"
+                  justifyContent="flex-end"
+                  ml="15px"
+                >
+                  <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
+                    <MenuOutlinedIcon />
+                  </IconButton>
+                </Box>
+              )}
+            </MenuItem>
+
+            {!isCollapsed && (
+              <Box mb="25px">
+                <Box display="flex" justifyContent="center" alignItems="center">
+                  <img
+                    alt="profile-user"
+                    width="120px"
+                    height="120px"
+                    src={`../../assets/Logo.png`}
+                    style={{ cursor: "pointer" }}
+                  />
+                </Box>
+                <Box textAlign="center">
+                  <Typography
+                    variant="h3"
+                    color={colors.grey[100]}
+                    fontWeight="bold"
+                    sx={{ m: "10px 0 0 0" }}
+                  >
+                    {admin.role.charAt(0).toUpperCase() + admin.role.slice(1)}
+                  </Typography>
+                  <Typography variant="h5" color={colors.greenAccent[500]}>
+                    Partner
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+
+            {/* Menu Items based on Role */}
+            <Box paddingLeft={isCollapsed ? undefined : "10%"}>
+              {admin.role === 'admin' && (
+                <>
+                  <Item
+                    title="Dashboard"
+                    to="/dashboard"
+                    icon={<HomeOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Banners"
+                    to="/banner"
+                    icon={<ManageAccountsIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Subpartners"
+                    to="/subpartners"
+                    icon={<ManageAccountsIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Agents"
+                    to="/agents"
+                    icon={<PeopleOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Approvals"
+                    to="/approvals"
+                    icon={<ContactsOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Fast Tags"
+                    to="/fasttags"
+                    icon={<ReceiptOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Payments"
+                    to="/paymentreports"
+                    icon={<CreditCardIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Reports"
+                    to="/reports"
+                    icon={<AccountBalanceWalletIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                </>
+              )}
+
+              {admin.role === 'subpartner' && (
+                <>
+                  <Item
+                    title="Dashboard"
+                    to="/dashboard1"
+                    icon={<HomeOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Agents"
+                    to="/agents"
+                    icon={<PeopleOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Fast Tags"
+                    to="/fasttags"
+                    icon={<ReceiptOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Reports"
+                    to="/subreports"
+                    icon={<AccountBalanceWalletIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                </>
+              )}
+
+              {admin.role === 'manager' && (
+                <>
+                  <Item
+                    title="Fast Tags"
+                    to="/fasttags"
+                    icon={<ReceiptOutlinedIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                  <Item
+                    title="Reports"
+                    to="/reports"
+                    icon={<AccountBalanceWalletIcon />}
+                    selected={selected}
+                    setSelected={setSelected}
+                  />
+                </>
+              )}
+            </Box>
+          </Menu>
+          {/* Powered by text at the bottom */}
+          <Box
+            mt="auto"
+            p={2}
+            textAlign="center"
+            sx={{
+              color: colors.grey[300],
+              fontSize: "12px",
             }}
           >
-            {!isCollapsed && (
-              <Box
-                display="flex"
-                justifyContent="flex-end"
-                ml="15px"
-              >
-                <IconButton onClick={() => setIsCollapsed(!isCollapsed)}>
-                  <MenuOutlinedIcon />
-                </IconButton>
-              </Box>
-            )}
-          </MenuItem>
-
-          {!isCollapsed && (
-            <Box mb="25px">
-              <Box display="flex" justifyContent="center" alignItems="center">
-                <img
-                  alt="profile-user"
-                  width="120px"
-                  height="120px"
-                  src={`../../assets/Logo.png`}
-                  style={{ cursor: "pointer" }}
-                />
-              </Box>
-              <Box textAlign="center">
-                <Typography
-                  variant="h3"
-                  color={colors.grey[100]}
-                  fontWeight="bold"
-                  sx={{ m: "10px 0 0 0" }}
-                >
-                  {admin.role.charAt(0).toUpperCase() + admin.role.slice(1)}
-                </Typography>
-                <Typography variant="h5" color={colors.greenAccent[500]}>
-                  Partner
-                </Typography>
-              </Box>
-            </Box>
-          )}
-
-          {/* Menu Items based on Role */}
-          <Box paddingLeft={isCollapsed ? undefined : "10%"}>
-            {admin.role === 'admin' && (
-              <>
-                <Item
-                  title="Dashboard"
-                  to="/dashboard"
-                  icon={<HomeOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Banners"
-                  to="/banner"
-                  icon={<ManageAccountsIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Subpartners"
-                  to="/subpartners"
-                  icon={<ManageAccountsIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Agents"
-                  to="/agents"
-                  icon={<PeopleOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Approvals"
-                  to="/approvals"
-                  icon={<ContactsOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Fast Tags"
-                  to="/fasttags"
-                  icon={<ReceiptOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Payments"
-                  to="/paymentreports"
-                  icon={<CreditCardIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Reports"
-                  to="/reports"
-                  icon={<AccountBalanceWalletIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-              </>
-            )}
-
-            {admin.role === 'subpartner' && (
-              <>
-                <Item
-                  title="Dashboard"
-                  to="/dashboard1"
-                  icon={<HomeOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Agents"
-                  to="/agents"
-                  icon={<PeopleOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Fast Tags"
-                  to="/fasttags"
-                  icon={<ReceiptOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Reports"
-                  to="/subreports"
-                  icon={<AccountBalanceWalletIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-              </>
-            )}
-
-            {admin.role === 'manager' && (
-              <>
-                {/* <Item
-                  title="Dashboard"
-                  to="/dashboard1"
-                  icon={<HomeOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                /> */}
-                <Item
-                  title="Fast Tags"
-                  to="/fasttags"
-                  icon={<ReceiptOutlinedIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-                <Item
-                  title="Reports"
-                  to="/reports"
-                  icon={<AccountBalanceWalletIcon />}
-                  selected={selected}
-                  setSelected={setSelected}
-                />
-              </>
-            )}
+            Powered by SUMUKHA NXT GEN IT SOLUTION
           </Box>
-        </Menu>
+        </Box>
       </ProSidebar>
     </Box>
   );
